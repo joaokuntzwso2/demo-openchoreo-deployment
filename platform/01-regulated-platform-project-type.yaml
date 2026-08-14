@@ -1,0 +1,113 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterProjectType
+metadata:
+  name: regulated-platform
+  annotations:
+    openchoreo.dev/display-name: Regulated Platform Cell
+    openchoreo.dev/description: Platform golden path with quotas, Pod Security labels, RBAC and default-deny ingress.
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      properties:
+        dataClassification:
+          type: string
+          enum: [INTERNAL, CONFIDENTIAL, RESTRICTED]
+          default: CONFIDENTIAL
+        criticality:
+          type: string
+          enum: [STANDARD, HIGH, MISSION_CRITICAL]
+          default: HIGH
+        costCenter:
+          type: string
+          minLength: 3
+      required: [costCenter]
+  environmentConfigs:
+    openAPIV3Schema:
+      type: object
+      properties:
+        cpuQuota:
+          type: string
+          default: "4"
+        memoryQuota:
+          type: string
+          default: "8Gi"
+        podQuota:
+          type: string
+          default: "20"
+        defaultDenyIngress:
+          type: boolean
+          default: true
+  validations:
+    - rule: "${environmentConfigs.cpuQuota.matches('^[0-9]+$')}"
+      message: cpuQuota must be an integer string such as "4" or "8"
+  resources:
+    - id: cell-namespace
+      template:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: ${metadata.namespace}
+          labels: ${oc_merge(metadata.labels, {"platform.demo/regulated":"true","pod-security.kubernetes.io/enforce":"baseline","pod-security.kubernetes.io/audit":"restricted","pod-security.kubernetes.io/warn":"restricted"})}
+          annotations:
+            platform.demo/data-classification: ${parameters.dataClassification}
+            platform.demo/criticality: ${parameters.criticality}
+            platform.demo/cost-center: ${parameters.costCenter}
+    - id: quota
+      template:
+        apiVersion: v1
+        kind: ResourceQuota
+        metadata:
+          name: platform-cell-quota
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          hard:
+            limits.cpu: ${environmentConfigs.cpuQuota}
+            limits.memory: ${environmentConfigs.memoryQuota}
+            pods: ${environmentConfigs.podQuota}
+    - id: defaults
+      template:
+        apiVersion: v1
+        kind: LimitRange
+        metadata:
+          name: platform-container-defaults
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          limits:
+            - type: Container
+              defaultRequest:
+                cpu: 50m
+                memory: 64Mi
+              default:
+                cpu: 500m
+                memory: 256Mi
+    - id: default-deny-ingress
+      includeWhen: "${environmentConfigs.defaultDenyIngress}"
+      template:
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        metadata:
+          name: default-deny-ingress
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          podSelector: {}
+          policyTypes: [Ingress]
+          ingress: []
+    - id: auditor-role
+      template:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: Role
+        metadata:
+          name: platform-runtime-auditor
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        rules:
+          - apiGroups: [""]
+            resources: [pods, services, configmaps, events]
+            verbs: [get, list, watch]
+          - apiGroups: ["gateway.networking.k8s.io"]
+            resources: [httproutes]
+            verbs: [get, list, watch]

@@ -1,0 +1,639 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: experience
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Platform Experience
+    openchoreo.dev/description: Financial and cross-domain experience layer.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: RESTRICTED
+    criticality: MISSION_CRITICAL
+    costCenter: PLAT-EXP
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: experience-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: experience
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: experience-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: experience
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: experience-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: experience
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: payments
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Payments
+    openchoreo.dev/description: Payment orchestration and managed state.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: RESTRICTED
+    criticality: MISSION_CRITICAL
+    costCenter: FIN-PAY
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: payments-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: payments
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: payments-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: payments
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: payments-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: payments
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: risk
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Fraud & Risk
+    openchoreo.dev/description: Fraud scoring and risk decisioning.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: RESTRICTED
+    criticality: HIGH
+    costCenter: FIN-RISK
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: risk-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: risk
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: risk-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: risk
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: risk-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: risk
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: customer
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Customer & Accounts
+    openchoreo.dev/description: Customer profile and account services.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: RESTRICTED
+    criticality: HIGH
+    costCenter: FIN-CUST
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: customer-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: customer
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: customer-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: customer
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: customer-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: customer
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: compliance
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Compliance
+    openchoreo.dev/description: Policy, sanctions and compliance decisioning.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: RESTRICTED
+    criticality: MISSION_CRITICAL
+    costCenter: FIN-COMP
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: compliance-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: compliance
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: compliance-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: compliance
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: compliance-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: compliance
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: telco-core
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Telco Core
+    openchoreo.dev/description: Subscriber, BSS and legacy modernization services.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: RESTRICTED
+    criticality: HIGH
+    costCenter: TELCO-CORE
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-core-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-core
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-core-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-core
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-core-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-core
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: telco-network
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Telco Network
+    openchoreo.dev/description: Network assurance, QoD and governed MCP tools.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: INTERNAL
+    criticality: MISSION_CRITICAL
+    costCenter: TELCO-NET
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-network-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-network
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-network-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-network
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-network-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-network
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: telco-commercial
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Telco Commercial
+    openchoreo.dev/description: Commercial wallet, rating and central policy services.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: RESTRICTED
+    criticality: HIGH
+    costCenter: TELCO-COMM
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-commercial-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-commercial
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-commercial-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-commercial
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-commercial-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-commercial
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: telco-experience
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Telco Experience
+    openchoreo.dev/description: Telecom operations experience layer.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: INTERNAL
+    criticality: HIGH
+    costCenter: TELCO-EXP
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-experience-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-experience
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-experience-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-experience
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: telco-experience-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-experience
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Project
+metadata:
+  name: platform-ops
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Platform Operations
+    openchoreo.dev/description: Kubernetes and OpenChoreo runtime operations tooling.
+spec:
+  deploymentPipelineRef:
+    name: platform-standard
+  type:
+    kind: ClusterProjectType
+    name: regulated-platform
+  parameters:
+    dataClassification: INTERNAL
+    criticality: HIGH
+    costCenter: PLAT-OPS
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: platform-ops-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: platform-ops
+  environment: development
+  environmentConfigs:
+    cpuQuota: '3'
+    memoryQuota: 4Gi
+    podQuota: '15'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: platform-ops-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: platform-ops
+  environment: staging
+  environmentConfigs:
+    cpuQuota: '4'
+    memoryQuota: 6Gi
+    podQuota: '20'
+    defaultDenyIngress: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ProjectReleaseBinding
+metadata:
+  name: platform-ops-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: platform-ops
+  environment: production
+  environmentConfigs:
+    cpuQuota: '8'
+    memoryQuota: 12Gi
+    podQuota: '40'
+    defaultDenyIngress: true

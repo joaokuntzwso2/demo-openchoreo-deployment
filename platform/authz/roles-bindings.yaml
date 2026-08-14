@@ -1,0 +1,65 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: AuthzRole
+metadata:
+  name: platform-auditor
+  namespace: platform-demo
+spec:
+  description: Read-only platform auditor with observability and AI-report visibility.
+  actions:
+    - namespace:view
+    - project:view
+    - component:view
+    - resource:view
+    - releasebinding:view
+    - resourcereleasebinding:view
+    - logs:view
+    - metrics:view
+    - traces:view
+    - alerts:view
+    - incidents:view
+    - rcareport:view
+    - finopsreport:view
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterAuthzRoleBinding
+metadata:
+  name: platform-demo-developers
+spec:
+  entitlement:
+    claim: groups
+    value: platform-developers
+  roleMappings:
+    - roleRef:
+        kind: ClusterAuthzRole
+        name: developer
+      scope:
+        namespace: platform-demo
+      conditions:
+        - actions:
+            - releasebinding:create
+            - releasebinding:update
+          expression: 'resource.environment != "platform-demo/production"'
+        - actions:
+            - logs:view
+            - metrics:view
+            - traces:view
+          expression: 'resource.environment in ["platform-demo/development", "platform-demo/staging"]'
+    - roleRef:
+        kind: ClusterAuthzRole
+        name: cluster-reader
+  effect: allow
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: AuthzRoleBinding
+metadata:
+  name: platform-demo-auditors
+  namespace: platform-demo
+spec:
+  entitlement:
+    claim: groups
+    value: platform-auditors
+  roleMappings:
+    - roleRef:
+        kind: AuthzRole
+        name: platform-auditor
+  effect: allow

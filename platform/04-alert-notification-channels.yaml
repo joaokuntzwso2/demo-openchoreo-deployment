@@ -1,0 +1,43 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ObservabilityAlertsNotificationChannel
+metadata:
+  name: platform-webhook-development
+  namespace: platform-demo
+spec:
+  environment: development
+  type: webhook
+  webhookConfig:
+    url: http://host.k3d.internal:18081/alerts
+    headers:
+      Content-Type:
+        value: application/json
+    payloadTemplate: |
+      {"alert":"${alertName}","severity":"${alertSeverity}","value":"${alertValue}","threshold":"${alertThreshold}","component":"${component}","project":"${project}","environment":"${environment}","aiRca":"${triggerAiRca}"}
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ObservabilityAlertsNotificationChannel
+metadata:
+  name: platform-webhook-staging
+  namespace: platform-demo
+spec:
+  environment: staging
+  type: webhook
+  webhookConfig:
+    url: http://host.k3d.internal:18081/alerts
+    headers:
+      Content-Type:
+        value: application/json
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ObservabilityAlertsNotificationChannel
+metadata:
+  name: platform-webhook-production
+  namespace: platform-demo
+spec:
+  environment: production
+  type: webhook
+  webhookConfig:
+    url: http://host.k3d.internal:18081/alerts
+    headers:
+      Content-Type:
+        value: application/json

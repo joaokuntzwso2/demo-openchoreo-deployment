@@ -1,0 +1,120 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterResourceType
+metadata:
+  name: platform-valkey-cache
+  annotations:
+    openchoreo.dev/display-name: Platform Valkey Cache
+    openchoreo.dev/description: Local-demo managed cache. Production variant should use a managed provisioner and external secret generator.
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      properties:
+        version:
+          type: string
+          enum: ["8.1.5"]
+          default: "8.1.5"
+  environmentConfigs:
+    openAPIV3Schema:
+      type: object
+      properties:
+        memory:
+          type: string
+          default: 128Mi
+  retainPolicy: Delete
+  outputs:
+    - name: host
+      value: "${metadata.name}.${metadata.namespace}.svc.cluster.local"
+    - name: port
+      value: "6379"
+    - name: password
+      secretKeyRef:
+        name: "${metadata.name}-creds"
+        key: password
+  resources:
+    - id: credentials
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${metadata.name}-creds
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        type: Opaque
+        stringData:
+          password: "openchoreo-platform-local"
+    - id: service
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${metadata.name}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          selector:
+            app: ${metadata.name}
+          ports:
+            - name: valkey
+              port: 6379
+              targetPort: 6379
+    - id: same-cell-cache-access
+      template:
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        metadata:
+          name: ${metadata.name}-allow-same-cell
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          podSelector:
+            matchLabels:
+              app: ${metadata.name}
+          policyTypes: [Ingress]
+          ingress:
+            - from:
+                - podSelector: {}
+              ports:
+                - protocol: TCP
+                  port: 6379
+    - id: statefulset
+      readyWhen: "${applied.statefulset.status.readyReplicas == applied.statefulset.status.replicas && applied.statefulset.status.replicas > 0}"
+      template:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        metadata:
+          name: ${metadata.name}
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+        spec:
+          serviceName: ${metadata.name}
+          replicas: 1
+          selector:
+            matchLabels:
+              app: ${metadata.name}
+          template:
+            metadata:
+              labels:
+                app: ${metadata.name}
+            spec:
+              containers:
+                - name: valkey
+                  image: valkey/valkey:${parameters.version}-alpine
+                  imagePullPolicy: IfNotPresent
+                  resources:
+                    requests:
+                      cpu: 25m
+                      memory: 32Mi
+                    limits:
+                      cpu: 250m
+                      memory: ${environmentConfigs.memory}
+                  env:
+                    - name: VALKEY_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: ${metadata.name}-creds
+                          key: password
+                  args: ["--requirepass", "$(VALKEY_PASSWORD)"]
+                  ports:
+                    - name: valkey
+                      containerPort: 6379

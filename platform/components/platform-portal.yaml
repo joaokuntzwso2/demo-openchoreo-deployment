@@ -1,0 +1,84 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: platform-portal
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Platform Application Portal
+spec:
+  owner:
+    projectName: experience
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: platform-portal
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: experience
+    componentName: platform-portal
+  container:
+    image: platform-demo/platform-portal:1.0.0
+    env:
+    - key: NODE_ENV
+      value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+      - external
+  dependencies:
+    endpoints:
+    - component: financial-bff
+      name: http
+      visibility: project
+      envBindings:
+        address: FINANCIAL_BFF_URL
+    - component: telco-subscriber-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: TELCO_SUBSCRIBER_URL
+      project: telco-core
+    - component: telco-network-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: TELCO_NETWORK_URL
+      project: telco-network
+    - component: telco-commercial-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: TELCO_COMMERCIAL_URL
+      project: telco-commercial
+    - component: telco-policy-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: TELCO_POLICY_URL
+      project: telco-commercial
+    - component: telco-bss-facade
+      name: http
+      visibility: namespace
+      envBindings:
+        address: TELCO_BSS_URL
+      project: telco-core
+    - component: telco-portal
+      name: http
+      visibility: namespace
+      envBindings:
+        address: TELCO_PORTAL_URL
+      project: telco-experience
+    - component: k8s-ops-console
+      name: http
+      visibility: namespace
+      envBindings:
+        address: OPS_CONSOLE_URL
+      project: platform-ops

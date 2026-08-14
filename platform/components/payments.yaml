@@ -1,0 +1,97 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: payments-service
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: "Payments Orchestrator"
+spec:
+  owner:
+    projectName: payments
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+  traits:
+    - kind: ClusterTrait
+      name: observability-alert-rule
+      instanceName: payment-error-rca
+      parameters:
+        description: "Critical payment upstream failures trigger an incident and AI root cause analysis."
+        severity: critical
+        source:
+          type: log
+          query: "PAYMENT_UPSTREAM_FAILURE"
+        condition:
+          window: 1m
+          interval: 1m
+          operator: gt
+          threshold: 0
+    - kind: ClusterTrait
+      name: observability-alert-rule
+      instanceName: payment-cpu-watch
+      parameters:
+        description: "Warn when payment service CPU utilization is elevated."
+        severity: warning
+        source:
+          type: metric
+          metric: cpu_usage
+        condition:
+          window: 5m
+          interval: 1m
+          operator: gte
+          threshold: 75
+    - kind: ClusterTrait
+      name: observability-alert-rule
+      instanceName: payment-budget-finops
+      parameters:
+        description: "Budget guardrail for payment processing runtime cost."
+        severity: warning
+        source:
+          type: budget
+        condition:
+          window: 5m
+          interval: 1m
+          operator: gt
+          threshold: 2
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: payments-service
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: payments
+    componentName: payments-service
+  container:
+    image: platform-demo/payments-service:1.0.0
+    env:
+      - key: NODE_ENV
+        value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+        - namespace
+  dependencies:
+    endpoints:
+      - component: fraud-service
+        name: http
+        visibility: namespace
+        project: risk
+        envBindings:
+          address: FRAUD_API_URL
+      - component: compliance-service
+        name: http
+        visibility: namespace
+        project: compliance
+        envBindings:
+          address: COMPLIANCE_API_URL
+    resources:
+      - ref: payment-idempotency-cache
+        envBindings:
+          host: VALKEY_HOST
+          port: VALKEY_PORT
+          password: VALKEY_PASSWORD

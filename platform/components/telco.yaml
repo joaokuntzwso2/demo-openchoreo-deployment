@@ -1,0 +1,360 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: telco-subscriber-service
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Subscriber & Service Status API
+spec:
+  owner:
+    projectName: telco-core
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: telco-subscriber-service
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-core
+    componentName: telco-subscriber-service
+  container:
+    image: platform-demo/telco-subscriber-service:1.0.0
+    env:
+    - key: NODE_ENV
+      value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+      - namespace
+      - external
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: telco-legacy-billing
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Legacy Billing SOAP System
+spec:
+  owner:
+    projectName: telco-core
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: telco-legacy-billing
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-core
+    componentName: telco-legacy-billing
+  container:
+    image: platform-demo/telco-legacy-billing:1.0.0
+    env:
+    - key: NODE_ENV
+      value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+      - namespace
+      - external
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: telco-bss-facade
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: BSS Modernization Facade
+spec:
+  owner:
+    projectName: telco-core
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: telco-bss-facade
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-core
+    componentName: telco-bss-facade
+  container:
+    image: platform-demo/telco-bss-facade:1.0.0
+    env:
+    - key: NODE_ENV
+      value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+      - namespace
+      - external
+  dependencies:
+    endpoints:
+    - component: telco-legacy-billing
+      name: http
+      visibility: project
+      envBindings:
+        address: LEGACY_BILLING_URL
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: telco-network-service
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Network Assurance & QoD API
+spec:
+  owner:
+    projectName: telco-network
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: telco-network-service
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-network
+    componentName: telco-network-service
+  container:
+    image: platform-demo/telco-network-service:1.0.0
+    env:
+    - key: NODE_ENV
+      value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+      - namespace
+      - external
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: telco-commercial-service
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Partner Commercial & Prepaid API
+spec:
+  owner:
+    projectName: telco-commercial
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: telco-commercial-service
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-commercial
+    componentName: telco-commercial-service
+  container:
+    image: platform-demo/telco-commercial-service:1.0.0
+    env:
+    - key: NODE_ENV
+      value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+      - namespace
+      - external
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: telco-policy-service
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Central Telco Policy API
+spec:
+  owner:
+    projectName: telco-commercial
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: telco-policy-service
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-commercial
+    componentName: telco-policy-service
+  container:
+    image: platform-demo/telco-policy-service:1.0.0
+    env:
+    - key: NODE_ENV
+      value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+      - namespace
+      - external
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: telco-mcp
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Governed Telco MCP Server
+spec:
+  owner:
+    projectName: telco-network
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: telco-mcp
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-network
+    componentName: telco-mcp
+  container:
+    image: platform-demo/telco-mcp:1.0.0
+    env:
+    - key: NODE_ENV
+      value: production
+  endpoints:
+    mcp:
+      type: HTTP
+      port: 8080
+      visibility:
+      - namespace
+      - external
+      basePath: /mcp
+  dependencies:
+    endpoints:
+    - component: telco-subscriber-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: SUBSCRIBER_URL
+      project: telco-core
+    - component: telco-network-service
+      name: http
+      visibility: project
+      envBindings:
+        address: NETWORK_URL
+    - component: telco-commercial-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: COMMERCIAL_URL
+      project: telco-commercial
+    - component: telco-policy-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: POLICY_URL
+      project: telco-commercial
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: telco-portal
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Telecom Operations Experience
+spec:
+  owner:
+    projectName: telco-experience
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: telco-portal
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: telco-experience
+    componentName: telco-portal
+  container:
+    image: platform-demo/telco-portal:1.0.0
+    env:
+    - key: NODE_ENV
+      value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+      - namespace
+      - external
+  dependencies:
+    endpoints:
+    - component: telco-subscriber-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: SUBSCRIBER_URL
+      project: telco-core
+    - component: telco-network-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: NETWORK_URL
+      project: telco-network
+    - component: telco-commercial-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: COMMERCIAL_URL
+      project: telco-commercial
+    - component: telco-policy-service
+      name: http
+      visibility: namespace
+      envBindings:
+        address: POLICY_URL
+      project: telco-commercial
+    - component: telco-bss-facade
+      name: http
+      visibility: namespace
+      envBindings:
+        address: BSS_URL
+      project: telco-core

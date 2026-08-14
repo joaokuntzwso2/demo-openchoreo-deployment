@@ -1,0 +1,117 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: financial-bff
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: "Financial Services Experience"
+spec:
+  owner:
+    projectName: experience
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: financial-bff
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: experience
+    componentName: financial-bff
+  container:
+    image: platform-demo/financial-bff:1.0.0
+    env:
+      - key: NODE_ENV
+        value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+        - external
+  dependencies:
+    endpoints:
+      - component: accounts-service
+        name: http
+        visibility: namespace
+        project: customer
+        envBindings:
+          address: ACCOUNTS_API_URL
+      - component: payments-service
+        name: http
+        visibility: namespace
+        project: payments
+        envBindings:
+          address: PAYMENTS_API_URL
+      - component: fraud-service
+        name: http
+        visibility: namespace
+        project: risk
+        envBindings:
+          address: FRAUD_API_URL
+      - component: compliance-service
+        name: http
+        visibility: namespace
+        project: compliance
+        envBindings:
+          address: COMPLIANCE_API_URL
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: financial-agent
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: "Financial Operations AI Agent"
+spec:
+  owner:
+    projectName: experience
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: financial-agent
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: experience
+    componentName: financial-agent
+  container:
+    image: platform-demo/financial-agent:1.0.0
+    env:
+      - key: NODE_ENV
+        value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+        - external
+  dependencies:
+    endpoints:
+      - component: customer-mcp
+        name: mcp
+        visibility: namespace
+        project: customer
+        envBindings:
+          address: CUSTOMER_MCP_URL
+      - component: risk-mcp
+        name: mcp
+        visibility: namespace
+        project: risk
+        envBindings:
+          address: RISK_MCP_URL
+      - component: compliance-mcp
+        name: mcp
+        visibility: namespace
+        project: compliance
+        envBindings:
+          address: COMPLIANCE_MCP_URL

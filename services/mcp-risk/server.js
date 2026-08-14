@@ -1,0 +1,8 @@
+const {start}=require('../lib/http'); const {createMcpRoutes}=require('../lib/mcp-server');
+async function get(path){const r=await fetch(process.env.FRAUD_API_URL+path);if(!r.ok)throw new Error(`fraud ${r.status}`);return r.json();}async function post(path,p){const r=await fetch(process.env.FRAUD_API_URL+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(p)});if(!r.ok)throw new Error(`fraud ${r.status}`);return r.json();}
+const tools={
+ score_transaction:{name:'score_transaction',description:'Score a proposed financial transaction for fraud risk.',inputSchema:{type:'object',properties:{customerId:{type:'string'},amount:{type:'number'},currency:{type:'string'},destinationCountry:{type:'string'},deviceId:{type:'string'},channel:{type:'string'}},required:['customerId','amount'],additionalProperties:true},handler:p=>post('/api/fraud/score',{transactionId:`AGENT-${Date.now()}`,...p})},
+ get_fraud_signals:{name:'get_fraud_signals',description:'Get recent aggregated fraud signals for the financial services domain.',inputSchema:{type:'object',properties:{},additionalProperties:false},handler:()=>get('/api/fraud/signals')},
+ explain_risk_controls:{name:'explain_risk_controls',description:'Explain the mock fraud controls used by this financial services demo.',inputSchema:{type:'object',properties:{},additionalProperties:false},handler:async()=>({controls:['high-value threshold','unusual destination','new-device signal','API high-value rule'],note:'Deterministic platform-demo rules; not a production fraud model.'})}
+};
+start({name:'mcp-risk',routes:createMcpRoutes({name:'financial-risk-mcp',tools})});

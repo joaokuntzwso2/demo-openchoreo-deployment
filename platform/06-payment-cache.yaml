@@ -1,0 +1,55 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Resource
+metadata:
+  name: payment-idempotency-cache
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Payment Idempotency Cache
+spec:
+  owner:
+    projectName: payments
+  type:
+    kind: ClusterResourceType
+    name: platform-valkey-cache
+  parameters:
+    version: "8.1.5"
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: payment-idempotency-cache-development
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: payments
+    resourceName: payment-idempotency-cache
+  environment: development
+  resourceTypeEnvironmentConfigs:
+    memory: 128Mi
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: payment-idempotency-cache-staging
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: payments
+    resourceName: payment-idempotency-cache
+  environment: staging
+  resourceTypeEnvironmentConfigs:
+    memory: 256Mi
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: ResourceReleaseBinding
+metadata:
+  name: payment-idempotency-cache-production
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: payments
+    resourceName: payment-idempotency-cache
+  environment: production
+  retainPolicy: Retain
+  resourceTypeEnvironmentConfigs:
+    memory: 512Mi

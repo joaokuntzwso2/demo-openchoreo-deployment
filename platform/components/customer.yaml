@@ -1,0 +1,79 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: accounts-service
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: "Customer & Accounts API"
+spec:
+  owner:
+    projectName: customer
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: accounts-service
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: customer
+    componentName: accounts-service
+  container:
+    image: platform-demo/accounts-service:1.0.0
+    env:
+      - key: NODE_ENV
+        value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+        - namespace
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: customer-mcp
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: "Customer MCP Server"
+spec:
+  owner:
+    projectName: customer
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: customer-mcp
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: customer
+    componentName: customer-mcp
+  container:
+    image: platform-demo/mcp-customer:1.0.0
+    env:
+      - key: NODE_ENV
+        value: production
+  endpoints:
+    mcp:
+      type: HTTP
+      port: 8080
+      basePath: /mcp
+      visibility:
+        - namespace
+  dependencies:
+    endpoints:
+      - component: accounts-service
+        name: http
+        visibility: project
+        envBindings:
+          address: ACCOUNTS_API_URL

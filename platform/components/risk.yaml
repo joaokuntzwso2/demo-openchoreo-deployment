@@ -1,0 +1,79 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: fraud-service
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: "Fraud Scoring API"
+spec:
+  owner:
+    projectName: risk
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: fraud-service
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: risk
+    componentName: fraud-service
+  container:
+    image: platform-demo/fraud-service:1.0.0
+    env:
+      - key: NODE_ENV
+        value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+        - namespace
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: risk-mcp
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: "Fraud & Risk MCP Server"
+spec:
+  owner:
+    projectName: risk
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: risk-mcp
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: risk
+    componentName: risk-mcp
+  container:
+    image: platform-demo/mcp-risk:1.0.0
+    env:
+      - key: NODE_ENV
+        value: production
+  endpoints:
+    mcp:
+      type: HTTP
+      port: 8080
+      basePath: /mcp
+      visibility:
+        - namespace
+  dependencies:
+    endpoints:
+      - component: fraud-service
+        name: http
+        visibility: project
+        envBindings:
+          address: FRAUD_API_URL

@@ -1,0 +1,8 @@
+const {start}=require('../lib/http'); const {createMcpRoutes}=require('../lib/mcp-server');
+async function get(path){const r=await fetch(process.env.COMPLIANCE_API_URL+path);if(!r.ok)throw new Error(`compliance ${r.status}`);return r.json();}async function post(path,p){const r=await fetch(process.env.COMPLIANCE_API_URL+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(p)});const d=await r.json();return d;}
+const tools={
+ check_payment_compliance:{name:'check_payment_compliance',description:'Run mock sanctions and jurisdiction screening for a payment.',inputSchema:{type:'object',properties:{beneficiaryName:{type:'string'},destinationCountry:{type:'string'},amount:{type:'number'}},required:['beneficiaryName','destinationCountry'],additionalProperties:true},handler:p=>post('/api/compliance/check',p)},
+ list_payment_policies:{name:'list_payment_policies',description:'List the mock AML, payment, and KYC policies active in the financial services demo.',inputSchema:{type:'object',properties:{},additionalProperties:false},handler:()=>get('/api/compliance/policies')},
+ explain_control:{name:'explain_control',description:'Explain why a financial compliance control exists.',inputSchema:{type:'object',properties:{controlId:{type:'string'}},required:['controlId'],additionalProperties:false},handler:async({controlId})=>({controlId,rationale:{'AML-001':'Screen counterparties against sanctions indicators before payment execution.','PAY-007':'Escalate high-value transfers for additional review.','KYC-003':'Maintain current customer due-diligence records.'}[controlId]||'Demo control not found'})}
+};
+start({name:'mcp-compliance',routes:createMcpRoutes({name:'financial-compliance-mcp',tools})});

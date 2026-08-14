@@ -1,0 +1,50 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workflow
+metadata:
+  name: platform-policy-gate
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Platform Promotion Policy Gate
+    openchoreo.dev/description: Deterministic platform workflow proving Workflow Plane execution via Argo.
+spec:
+  ttlAfterCompletion: 1h
+  parameters:
+    openAPIV3Schema:
+      type: object
+      properties:
+        release:
+          type: string
+        environment:
+          type: string
+          enum: [development, staging, production]
+        changeTicket:
+          type: string
+        securityScan:
+          type: string
+          enum: [PASS, FAIL]
+      required: [release, environment, changeTicket, securityScan]
+  runTemplate:
+    apiVersion: argoproj.io/v1alpha1
+    kind: Workflow
+    metadata:
+      name: ${metadata.workflowRunName}
+      namespace: ${metadata.namespace}
+    spec:
+      serviceAccountName: workflow-sa
+      entrypoint: policy-gate
+      templates:
+        - name: policy-gate
+          container:
+            image: platform-demo/financial-agent:1.0.0
+            imagePullPolicy: IfNotPresent
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                set -eu
+                echo "[platform-policy-gate] release=${parameters.release} environment=${parameters.environment} ticket=${parameters.changeTicket} scan=${parameters.securityScan}"
+                test "${parameters.securityScan}" = "PASS"
+                case "${parameters.environment}" in
+                  production) echo "Production evidence accepted: ${parameters.changeTicket}" ;;
+                  *) echo "Non-production policy gate accepted" ;;
+                esac
+                echo "POLICY_GATE=PASS"

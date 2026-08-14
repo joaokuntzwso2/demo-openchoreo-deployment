@@ -1,0 +1,79 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: compliance-service
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: "AML & Compliance API"
+spec:
+  owner:
+    projectName: compliance
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: compliance-service
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: compliance
+    componentName: compliance-service
+  container:
+    image: platform-demo/compliance-service:1.0.0
+    env:
+      - key: NODE_ENV
+        value: production
+  endpoints:
+    http:
+      type: HTTP
+      port: 8080
+      visibility:
+        - namespace
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Component
+metadata:
+  name: compliance-mcp
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: "Compliance MCP Server"
+spec:
+  owner:
+    projectName: compliance
+  autoDeploy: true
+  componentType:
+    kind: ClusterComponentType
+    name: deployment/service
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Workload
+metadata:
+  name: compliance-mcp
+  namespace: platform-demo
+spec:
+  owner:
+    projectName: compliance
+    componentName: compliance-mcp
+  container:
+    image: platform-demo/mcp-compliance:1.0.0
+    env:
+      - key: NODE_ENV
+        value: production
+  endpoints:
+    mcp:
+      type: HTTP
+      port: 8080
+      basePath: /mcp
+      visibility:
+        - namespace
+  dependencies:
+    endpoints:
+      - component: compliance-service
+        name: http
+        visibility: project
+        envBindings:
+          address: COMPLIANCE_API_URL

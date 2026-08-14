@@ -1,0 +1,57 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: Environment
+metadata:
+  name: development
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Platform Development
+spec:
+  dataPlaneRef:
+    kind: ClusterDataPlane
+    name: default
+  isProduction: false
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Environment
+metadata:
+  name: staging
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Platform Staging
+spec:
+  dataPlaneRef:
+    kind: ClusterDataPlane
+    name: default
+  isProduction: false
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: Environment
+metadata:
+  name: production
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Platform Production
+spec:
+  dataPlaneRef:
+    kind: ClusterDataPlane
+    name: default
+  isProduction: true
+---
+apiVersion: openchoreo.dev/v1alpha1
+kind: DeploymentPipeline
+metadata:
+  name: platform-standard
+  namespace: platform-demo
+  annotations:
+    openchoreo.dev/display-name: Platform Standard Promotion
+    openchoreo.dev/description: Controlled development to staging to production promotion.
+spec:
+  promotionPaths:
+    - sourceEnvironmentRef:
+        name: development
+      targetEnvironmentRefs:
+        - name: staging
+    - sourceEnvironmentRef:
+        name: staging
+      targetEnvironmentRefs:
+        - name: production

@@ -1,0 +1,227 @@
+# ============================================================
+# OpenChoreo Platform Application Demo
+# Local / generated / sensitive files
+# ============================================================
+
+# ------------------------------------------------------------
+# macOS / OS metadata
+# ------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+Thumbs.db
+Desktop.ini
+
+# ------------------------------------------------------------
+# Editors / IDEs
+# ------------------------------------------------------------
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ------------------------------------------------------------
+# Environment / local configuration
+# ------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.template
+!.env.sample
+.envrc
+.direnv/
+
+# ------------------------------------------------------------
+# Credentials / secrets / authentication material
+# ------------------------------------------------------------
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+*.token
+*.tokens
+*.secret
+*.secrets
+*.credentials
+
+credentials
+credentials.json
+application_default_credentials.json
+service-account.json
+service-account-*.json
+
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+.git-credentials
+.netrc
+.npmrc
+.pypirc
+
+.secrets/
+secrets.local/
+private/
+
+# ------------------------------------------------------------
+# Kubernetes / Helm / OpenChoreo local credentials
+# ------------------------------------------------------------
+.kube/
+kubeconfig
+kubeconfig.*
+*.kubeconfig
+
+helm-secrets/
+*.agekey
+
+# Do NOT blanket-ignore Kubernetes *Secret manifests here.
+# Declarative manifests may intentionally contain placeholder
+# Secret resources and must be reviewed by the secret scanner.
+
+# ------------------------------------------------------------
+# Colima / Docker local configuration
+# ------------------------------------------------------------
+.colima/
+.docker/
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# ------------------------------------------------------------
+# Rancher local/runtime state
+# ------------------------------------------------------------
+rancher-data/
+.rancher/
+
+# ------------------------------------------------------------
+# Node.js
+# ------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.pnpm-store/
+.nyc_output/
+coverage/
+
+# ------------------------------------------------------------
+# Python
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.venv/
+venv/
+env/
+
+# ------------------------------------------------------------
+# Java / Gradle / Maven
+# ------------------------------------------------------------
+.gradle/
+**/target/
+**/out/
+*.class
+
+# ------------------------------------------------------------
+# Build output
+# ------------------------------------------------------------
+**/dist/
+**/build/
+.cache/
+
+# ------------------------------------------------------------
+# Terraform / infrastructure state
+# ------------------------------------------------------------
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform.lock.hcl.local
+
+# ------------------------------------------------------------
+# Logs / runtime / temporary files
+# ------------------------------------------------------------
+*.log
+logs/
+runtime/
+tmp/
+temp/
+.tmp/
+.cache/
+
+*.pid
+*.pid.lock
+
+# ------------------------------------------------------------
+# Test / diagnostic output
+# ------------------------------------------------------------
+gitleaks-report.json
+gitleaks*.json
+diagnostic*.txt
+diagnostics/
+test-results/
+
+# ------------------------------------------------------------
+# Backups / patches / editor artifacts
+# ------------------------------------------------------------
+*.bak
+*.backup
+*.orig
+*.rej
+*.patch~
+*.before-*
+*~
+
+# ------------------------------------------------------------
+# Generated archives / bundles
+# ------------------------------------------------------------
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Generated ChatGPT/demo patch packages from development
+/OpenChoreo_Platform_*/
+/OpenChoreo_Platform_*.zip
+/OpenChoreo_Platform_*.tar.gz
+
+# ------------------------------------------------------------
+# Local tooling output
+# ------------------------------------------------------------
+.report/
+reports-local/
+generated-local/
+
+# ------------------------------------------------------------
+# Miscellaneous sensitive OS/cloud configuration
+# ------------------------------------------------------------
+.aws/
+.azure/
+.config/gcloud/
