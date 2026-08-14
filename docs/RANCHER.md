@@ -1,6 +1,6 @@
 # Rancher integration
 
-Rancher `v2.12.10` runs by default in a standalone Docker container named `platform-rancher`, mapped to `https://localhost:8444`, with persistent data in the Docker volume `platform-rancher-data`. This is a local demonstration topology, not a production Rancher architecture.
+Rancher runs by default from `rancher/rancher:latest` in a standalone Docker container named `platform-rancher`, mapped to `https://localhost:8444`, with persistent data in the Docker volume `platform-rancher-data`. This is a local demonstration topology, not a production Rancher architecture.
 
 Default local credentials:
 
