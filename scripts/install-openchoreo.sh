@@ -24,18 +24,21 @@ cluster_exists() {
 }
 
 adopt_context() {
-  if ! kubectl config get-contexts -o name 2>/dev/null \
-      | grep -Fxq "$ctx"; then
+  # Always refresh kubeconfig from the live k3d cluster.
+  #
+  # A context with the same name may already exist from an older cluster or
+  # another Docker/Colima profile. Merely switching to that context can leave
+  # stale API endpoints, certificates, or credentials.
+  log "Refreshing kubeconfig for k3d cluster '$CLUSTER'"
 
-    log "Merging kubeconfig for existing k3d cluster '$CLUSTER'"
+  k3d kubeconfig merge "$CLUSTER" \
+    --kubeconfig-merge-default \
+    --kubeconfig-switch-context \
+    --update \
+    >/dev/null
 
-    k3d kubeconfig merge "$CLUSTER" \
-      --kubeconfig-merge-default \
-      --kubeconfig-switch-context \
-      >/dev/null
-  else
-    kubectl config use-context "$ctx" >/dev/null
-  fi
+  [[ "$(kubectl config current-context)" == "$ctx" ]] \
+    || die "Could not switch kubectl to '$ctx'"
 }
 
 if cluster_exists; then
@@ -59,12 +62,30 @@ log "Installing OpenChoreo $VERSION using the immutable GHCR Quick Start image"
 
 docker pull "$QUICK_START_IMAGE" >/dev/null
 
+# The Quick Start installer must run as the non-root `openchoreo` user,
+# but Docker socket ownership varies across Docker Desktop / Colima / Linux.
+# Detect the socket's numeric GID and add it as a supplementary group.
+DOCKER_SOCKET_GID="$(
+  docker run --rm \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    --entrypoint /bin/bash \
+    "$QUICK_START_IMAGE" \
+    -lc 'stat -c "%g" /var/run/docker.sock'
+)"
+
+[[ "$DOCKER_SOCKET_GID" =~ ^[0-9]+$ ]] \
+  || die "Could not determine Docker socket group ID"
+
+log "Docker socket GID detected as $DOCKER_SOCKET_GID"
+
 docker rm -f "$INSTALLER_CONTAINER" >/dev/null 2>&1 || true
 
 docker run --rm \
   --name "$INSTALLER_CONTAINER" \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --network=host \
+  --user openchoreo \
+  --group-add "$DOCKER_SOCKET_GID" \
   -e "OPENCHOREO_INSTALL_VERSION=$VERSION" \
   --entrypoint /bin/bash \
   "$QUICK_START_IMAGE" \

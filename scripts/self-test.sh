@@ -83,4 +83,36 @@ if grep -RniE '/Users/[^/]+|/mnt/data/' "$ROOT" --exclude-dir=runtime --exclude-
 fi
 rm -f /tmp/platform-demo-paths.$$ 2>/dev/null || true
 printf '  shareable branding/path invariants: PASS\n'
-printf '==> Static repository self-test PASSED\n'
+printf '
+# Fresh-clone OpenChoreo installer invariants.
+grep -q -- '--user openchoreo' "$ROOT/scripts/install-openchoreo.sh" || {
+  echo "Quick Start installer must run as the non-root openchoreo user"
+  exit 1
+}
+
+grep -q -- '--group-add "$DOCKER_SOCKET_GID"' "$ROOT/scripts/install-openchoreo.sh" || {
+  echo "Quick Start installer does not propagate Docker socket group access"
+  exit 1
+}
+
+grep -q 'DOCKER_SOCKET_GID=' "$ROOT/scripts/install-openchoreo.sh" || {
+  echo "Quick Start installer does not dynamically detect the Docker socket GID"
+  exit 1
+}
+
+grep -q -- '--kubeconfig-merge-default' "$ROOT/scripts/install-openchoreo.sh" || {
+  echo "Quick Start installer does not refresh the host kubeconfig"
+  exit 1
+}
+
+grep -q -- '--kubeconfig-switch-context' "$ROOT/scripts/install-openchoreo.sh" || {
+  echo "Quick Start installer does not switch to the recovered k3d context"
+  exit 1
+}
+
+grep -q -- '--update' "$ROOT/scripts/install-openchoreo.sh" || {
+  echo "Quick Start installer does not refresh stale kubeconfig entries"
+  exit 1
+}
+
+==> Static repository self-test PASSED\n'
