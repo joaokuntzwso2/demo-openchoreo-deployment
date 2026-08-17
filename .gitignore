@@ -225,3 +225,4 @@ generated-local/
 .aws/
 .azure/
 .config/gcloud/
+.showcase.env

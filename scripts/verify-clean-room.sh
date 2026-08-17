@@ -84,7 +84,7 @@ NETWORK="$(wait_url telco-network-service)" || die "Network backend route missin
 BSS="$(wait_url telco-bss-facade)" || die "BSS facade route missing"
 
 log "Verifying the unified Platform Portal"
-curl -fsS --max-time 15 "$PORTAL/" | grep -q 'Platform Application' || die "Platform Portal did not return expected HTML"
+curl -fsS --max-time 15 "$PORTAL/" | grep -Eq 'OpenChoreo Financial Services Platform|Platform Application' || die "Platform Portal did not return expected HTML"
 curl -fsS --max-time 15 "$PORTAL/api/status" >/tmp/platform-status.json
 python3 - <<'PY'
 import json

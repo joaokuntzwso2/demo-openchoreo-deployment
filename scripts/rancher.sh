@@ -4,6 +4,18 @@ source "$(dirname "$0")/lib.sh"
 need docker; need curl; need python3; need kubectl
 RANCHER_CONTAINER="${RANCHER_CONTAINER:-platform-rancher}"
 RANCHER_IMAGE="${RANCHER_IMAGE:-rancher/rancher:latest}"
+
+# SHOWCASE_STRICT_RANCHER_PIN
+# Development keeps the repository's convenient :latest default. A qualified
+# event run can opt into an immutable digest by sourcing runtime/showcase.env.
+if [[ "${SHOWCASE_STRICT:-0}" == "1" ]]; then
+  if [[ "$RANCHER_IMAGE" == *":latest" ]]; then
+    die "SHOWCASE_STRICT=1 refuses mutable Rancher tag: $RANCHER_IMAGE. Run ./scripts/showcase-freeze-rancher.sh first."
+  fi
+  if [[ "$RANCHER_IMAGE" != *@sha256:* ]]; then
+    die "SHOWCASE_STRICT=1 requires Rancher to be pinned by immutable digest; got: $RANCHER_IMAGE"
+  fi
+fi
 RANCHER_PASSWORD_FILE="${RANCHER_PASSWORD_FILE:-$ROOT/runtime/rancher-bootstrap-password}"
 
 load_rancher_password() {

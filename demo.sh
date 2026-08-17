@@ -22,6 +22,18 @@ case "$cmd" in
   rancher)
     "$ROOT/scripts/rancher.sh" up
     ;;
+  capabilities)
+    "$ROOT/scripts/showcase-capabilities.sh"
+    ;;
+  readiness)
+    "$ROOT/scripts/showcase-readiness.sh"
+    ;;
+  prepare)
+    "$ROOT/scripts/showcase-prepare.sh"
+    ;;
+  ai)
+    "$ROOT/scripts/enable-ai-agents.sh"
+    ;;
   scenario)
     shift || true
     "$ROOT/scripts/scenario.sh" "${1:-help}"
@@ -46,7 +58,7 @@ case "$cmd" in
     ;;
   *)
     cat >&2 <<USAGE
-Usage: ./demo.sh [up|reset|verify|status|rancher|scenario|stop|start|destroy]
+Usage: ./demo.sh [up|reset|verify|status|capabilities|readiness|prepare|ai|rancher|scenario|stop|start|destroy]
 
   up       Install/reconcile the complete platform application and verify it (default)
   reset    Destructive clean-room rebuild: OpenChoreo + apps + Rancher + verification

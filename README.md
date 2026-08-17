@@ -155,3 +155,27 @@ The original repository demonstrates WSO2 API Manager / Micro Integrator capabil
 - `docs/RANCHER.md`
 - `docs/TROUBLESHOOTING.md`
 - `docs/VALIDATION.md`
+
+<!-- OPENCHOREO_SHOWCASE_UPGRADE -->
+## Qualified customer showcase mode
+
+The normal developer flow remains `./demo.sh up` / `./demo.sh reset`. For customer-facing event qualification, use the stricter workflow below so that the Rancher image is immutable and the full OpenChoreo capability set is checked before presentation:
+
+```bash
+./scripts/showcase-freeze-rancher.sh
+source .showcase.env
+./demo.sh reset
+./demo.sh readiness
+```
+
+Useful commands:
+
+```bash
+./demo.sh capabilities   # live platform capability evidence
+./demo.sh readiness      # source + runtime + Rancher + capability gate
+./demo.sh prepare        # final operator preparation
+./demo.sh ai             # enable OpenChoreo AI agents (requires provider key)
+```
+
+See `docs/SHOWCASE-CAPABILITY-MAP.md` and `docs/SHOWCASE-RUNBOOK.md` for the platform story and presentation sequence.
+
