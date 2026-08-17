@@ -39,3 +39,16 @@ Use the **OpenChoreo Backstage portal as the primary platform evidence**. The cu
 ## Production-relevance caveat
 
 The demo's local managed cache is intentionally a local showcase ResourceType. Do not characterize its embedded demo credentials/provisioning pattern as a production banking secret-management solution. The platform abstraction is the capability being demonstrated; a production installation should bind the ResourceType to the organization's approved managed service/provisioner and secret-management implementation.
+
+<!-- PLATFORM-ENGINEERING-CAPABILITIES-V2 -->
+## Platform engineering abstractions added for the showcase
+
+| Capability | Live resource | Demo evidence |
+|---|---|---|
+| Deployment pipeline | `DeploymentPipeline/platform-standard` | development -> staging -> production |
+| Cluster component golden path | `ClusterComponentType/regulated-service` | `payments-service` consumes `deployment/regulated-service` |
+| Cross-cutting platform policy | `ClusterTrait/bank-runtime-hardening` | seccomp, capability drop, service-account-token hardening and PDB rendered into Kubernetes |
+| Reusable cluster workflow | `ClusterWorkflow/regulated-release-gate` | `WorkflowRun` pass and expected-deny scenarios |
+| Immutable promotion | existing `ComponentRelease` + `ReleaseBinding` model | same payments release promoted through staging and production |
+
+Use `./demo.sh scenario platform-engineering` as the primary platform-engineer walkthrough.

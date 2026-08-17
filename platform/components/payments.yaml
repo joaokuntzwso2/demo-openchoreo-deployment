@@ -11,7 +11,7 @@ spec:
   autoDeploy: true
   componentType:
     kind: ClusterComponentType
-    name: deployment/service
+    name: deployment/regulated-service
   traits:
     - kind: ClusterTrait
       name: observability-alert-rule

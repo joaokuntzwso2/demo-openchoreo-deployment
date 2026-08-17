@@ -49,6 +49,10 @@ case "$scenario" in
     newpod="$(kubectl get pod -n "$ns" -l openchoreo.dev/component=payments-service -o jsonpath='{.items[0].metadata.name}')"
     printf 'Old pod: %s\nNew pod: %s\n' "$pod" "$newpod" ;;
   policy-gate) "$ROOT/scripts/run-policy-gate.sh" ;;
+  platform-engineering) "$ROOT/scripts/scenario-platform-engineering.sh" ;;
+  regulated-gate-pass) "$ROOT/scripts/run-regulated-release-gate.sh" pass production ;;
+  regulated-gate-fail) "$ROOT/scripts/run-regulated-release-gate.sh" fail production ;;
+  promotion) "$ROOT/scripts/scenario-promotion.sh" ;;
   sre) "$ROOT/scripts/scenario-sre.sh" ;;
   finops) "$ROOT/scripts/scenario-finops.sh" ;;
   help|*)
@@ -67,6 +71,10 @@ Business scenarios:
 Platform scenarios:
   self-heal     delete the Payments pod and watch Kubernetes recreate it
   policy-gate   execute the OpenChoreo workflow policy gate
+  platform-engineering show DeploymentPipeline, ClusterComponentType, ClusterTrait and ClusterWorkflow evidence
+  regulated-gate-pass run the reusable ClusterWorkflow with passing release evidence
+  regulated-gate-fail run the reusable ClusterWorkflow and prove an expected policy denial
+  promotion     promote the immutable financial release through staging and production with the regulated gate
   sre           inject PAYMENT_UPSTREAM_FAILURE for alert/RCA demonstration
   finops        inflate local OpenCost prices for the budget/FinOps story
 USAGE

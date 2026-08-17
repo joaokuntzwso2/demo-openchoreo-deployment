@@ -49,6 +49,10 @@ echo
 echo "==> 5/5 OpenChoreo capability proof"
 ./scripts/showcase-capabilities.sh
 
+echo
+echo "==> OpenChoreo platform-engineering proof"
+./scripts/verify-platform-engineering.sh
+
 if [[ "${SHOWCASE_REQUIRE_AI:-0}" == "1" ]]; then
   echo
   echo "==> Required AI-agent readiness"

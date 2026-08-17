@@ -3,7 +3,7 @@ set -Eeuo pipefail
 source "$(dirname "$0")/lib.sh"
 need docker; need curl; need python3; need kubectl
 RANCHER_CONTAINER="${RANCHER_CONTAINER:-platform-rancher}"
-RANCHER_IMAGE="${RANCHER_IMAGE:-rancher/rancher:latest}"
+RANCHER_IMAGE="${RANCHER_IMAGE:-rancher/rancher@sha256:5d0354e95d55f92da0f3c0fdcf59c07dacfe5bda886aac5273da4ca98c8c1376}"
 
 # SHOWCASE_STRICT_RANCHER_PIN
 # Development keeps the repository's convenient :latest default. A qualified
@@ -73,7 +73,7 @@ login(){
 
 register_cluster(){
   ensure_demo_context
-  kubectl get ns cattle-system >/dev/null 2>&1 && { log "Rancher agents already exist in the OpenChoreo cluster"; return 0; }
+  kubectl get deployment cattle-cluster-agent -n cattle-system >/dev/null 2>&1 && { log "Rancher agents already exist in the OpenChoreo cluster"; return 0; }
   local token cluster_id reg_id command current
   token="$(login || true)"
   [[ -n "$token" ]] || { warn "Rancher API login is not ready; open $RANCHER_URL and register the cluster from Cluster Management if desired."; return 0; }
@@ -91,9 +91,19 @@ register_cluster(){
   fi
   [[ -n "$cluster_id" ]] || { warn "Could not create/find the Rancher registration object. Rancher itself is available at $RANCHER_URL."; return 0; }
 
-  reg_id="$(curl -ksS -X POST "$RANCHER_URL/v3/clusters/$cluster_id/clusterregistrationtoken" -H "Authorization: Bearer $token" -H 'content-type: application/json' \
-    --data-binary "{\"type\":\"clusterRegistrationToken\",\"clusterId\":\"$cluster_id\"}" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("id", ""))' 2>/dev/null || true)"
-  [[ -n "$reg_id" ]] || { warn "Could not create a Rancher registration token. Use the Rancher UI to register the existing k3d cluster."; return 0; }
+  reg_id=""
+  local token_start=$SECONDS
+  while (( SECONDS-token_start < 180 )); do
+    reg_id="$(curl -ksS -X POST "$RANCHER_URL/v3/clusters/$cluster_id/clusterregistrationtoken" -H "Authorization: Bearer $token" -H 'content-type: application/json' \
+      --data-binary "{\"type\":\"clusterRegistrationToken\",\"clusterId\":\"$cluster_id\"}" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("id", ""))' 2>/dev/null || true)"
+    [[ -n "$reg_id" ]] && break
+    sleep 5
+  done
+
+  [[ -n "$reg_id" ]] || {
+    warn "Rancher did not create a registration token within the retry window."
+    return 1
+  }
 
   local start=$SECONDS
   command=""

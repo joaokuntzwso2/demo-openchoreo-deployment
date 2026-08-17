@@ -59,7 +59,7 @@ printf '  deterministic clean-room image/bootstrap invariants: PASS\n'
 
 grep -q 'kubernetes.default.svc' "$ROOT/services/k8s-ops-console/server.js" || { echo 'Kubernetes Ops Console is not using the in-cluster Kubernetes API' >&2; exit 1; }
 grep -q 'platform.demo/restartedAt' "$ROOT/services/k8s-ops-console/server.js" || { echo 'Kubernetes Ops Console safe restart action missing' >&2; exit 1; }
-grep -q 'rancher/rancher:latest' "$ROOT/scripts/rancher.sh" || { echo 'Rancher integration missing or default image is not rancher/rancher:latest' >&2; exit 1; }
+grep -q 'rancher/rancher@sha256:5d0354e95d55f92da0f3c0fdcf59c07dacfe5bda886aac5273da4ca98c8c1376' "$ROOT/scripts/rancher.sh" || { echo 'Rancher integration missing or immutable Rancher image is not pinned to the showcase digest' >&2; exit 1; }
 if grep -q 'rancher/rancher:v2.12.10' "$ROOT/scripts/rancher.sh"; then
   echo 'Obsolete Rancher v2.12.10 tag is still present' >&2
   exit 1

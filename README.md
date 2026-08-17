@@ -179,3 +179,29 @@ Useful commands:
 
 See `docs/SHOWCASE-CAPABILITY-MAP.md` and `docs/SHOWCASE-RUNBOOK.md` for the platform story and presentation sequence.
 
+
+
+<!-- PLATFORM-ENGINEERING-SHOWCASE-V2 -->
+## Platform engineering showcase
+
+The banking showcase includes cluster-scoped OpenChoreo platform abstractions in addition to the application estate:
+
+- `DeploymentPipeline/platform-standard` — development -> staging -> production delivery path.
+- `ClusterProjectType/regulated-platform` — regulated project/cell golden path.
+- `ClusterComponentType/regulated-service` — reusable service golden path derived from OpenChoreo's service type.
+- `ClusterTrait/bank-runtime-hardening` — mandatory runtime hardening automatically embedded by `regulated-service`.
+- `ClusterResourceType/platform-valkey-cache` — managed application resource abstraction.
+- `ClusterWorkflow/regulated-release-gate` — reusable organization-wide release evidence workflow.
+- `WorkflowRun` scenarios — both passing and deliberately denied policy executions on the Workflow Plane.
+
+Useful presenter commands:
+
+```bash
+./demo.sh scenario platform-engineering
+./demo.sh scenario regulated-gate-pass
+./demo.sh scenario regulated-gate-fail
+./demo.sh scenario promotion
+./scripts/verify-platform-engineering.sh
+```
+
+`payments-service` intentionally consumes `deployment/regulated-service` as the representative mission-critical banking workload. The other services keep the standard OpenChoreo component types to minimize exhibition risk while still proving that the platform team can create and govern custom golden paths.

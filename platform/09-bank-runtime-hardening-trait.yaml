@@ -1,0 +1,61 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterTrait
+metadata:
+  name: bank-runtime-hardening
+  annotations:
+    openchoreo.dev/display-name: Bank Runtime Hardening
+    openchoreo.dev/description: >-
+      Reusable banking runtime baseline. It hardens rendered Deployments and creates
+      a PodDisruptionBudget without requiring application teams to author Kubernetes policy.
+spec:
+  parameters:
+    openAPIV3Schema:
+      type: object
+      properties:
+        complianceProfile:
+          type: string
+          enum: [BASELINE, PCI-DSS, SOX]
+          default: PCI-DSS
+  patches:
+    - target:
+        group: apps
+        version: v1
+        kind: Deployment
+      targetPlane: dataplane
+      operations:
+        - op: add
+          path: /spec/template/metadata/annotations/platform.openchoreo.dev~1compliance-profile
+          value: ${parameters.complianceProfile}
+        - op: add
+          path: /spec/template/metadata/annotations/platform.openchoreo.dev~1managed-security-baseline
+          value: bank-runtime-hardening
+        - op: add
+          path: /spec/template/spec/automountServiceAccountToken
+          value: false
+        - op: add
+          path: /spec/template/spec/securityContext
+          value:
+            seccompProfile:
+              type: RuntimeDefault
+        - op: add
+          path: /spec/template/spec/containers[?(@.name=='main')]/securityContext
+          value:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+  creates:
+    - targetPlane: dataplane
+      template:
+        apiVersion: policy/v1
+        kind: PodDisruptionBudget
+        metadata:
+          name: ${metadata.name}-bank-availability
+          namespace: ${metadata.namespace}
+          labels: ${metadata.labels}
+          annotations:
+            platform.openchoreo.dev/managed-by-trait: bank-runtime-hardening
+        spec:
+          maxUnavailable: 1
+          selector:
+            matchLabels: ${metadata.podSelectors}

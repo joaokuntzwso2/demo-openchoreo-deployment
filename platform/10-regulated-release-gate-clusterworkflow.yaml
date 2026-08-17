@@ -1,0 +1,92 @@
+apiVersion: openchoreo.dev/v1alpha1
+kind: ClusterWorkflow
+metadata:
+  name: regulated-release-gate
+  annotations:
+    openchoreo.dev/display-name: Regulated Release Gate
+    openchoreo.dev/description: >-
+      Reusable cluster-wide release evidence workflow for regulated workloads.
+      It demonstrates organization-wide workflow governance on the OpenChoreo Workflow Plane.
+spec:
+  workflowPlaneRef:
+    kind: ClusterWorkflowPlane
+    name: default
+  ttlAfterCompletion: 1h
+  parameters:
+    openAPIV3Schema:
+      type: object
+      required:
+        - release
+        - environment
+        - changeTicket
+        - securityScan
+        - riskAssessment
+        - approvedBy
+      properties:
+        release:
+          type: string
+          minLength: 1
+        environment:
+          type: string
+          enum: [development, staging, production]
+        changeTicket:
+          type: string
+        securityScan:
+          type: string
+          enum: [PASS, FAIL]
+        riskAssessment:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+        approvedBy:
+          type: string
+  runTemplate:
+    apiVersion: argoproj.io/v1alpha1
+    kind: Workflow
+    metadata:
+      name: ${metadata.workflowRunName}
+      namespace: ${metadata.namespace}
+    spec:
+      serviceAccountName: workflow-sa
+      entrypoint: regulated-release-gate
+      templates:
+        - name: regulated-release-gate
+          container:
+            image: platform-demo/financial-agent:1.0.0
+            imagePullPolicy: IfNotPresent
+            command: ["/bin/sh", "-c"]
+            args:
+              - |
+                set -eu
+                echo "============================================================"
+                echo " OPENCHOREO REGULATED RELEASE GATE"
+                echo "============================================================"
+                echo "release=${parameters.release}"
+                echo "environment=${parameters.environment}"
+                echo "changeTicket=${parameters.changeTicket}"
+                echo "securityScan=${parameters.securityScan}"
+                echo "riskAssessment=${parameters.riskAssessment}"
+                echo "approvedBy=${parameters.approvedBy}"
+                echo
+
+                if [ "${parameters.securityScan}" != "PASS" ]; then
+                  echo "POLICY_GATE=DENY reason=security-scan"
+                  exit 42
+                fi
+
+                if [ "${parameters.riskAssessment}" = "HIGH" ]; then
+                  echo "POLICY_GATE=DENY reason=high-risk-assessment"
+                  exit 43
+                fi
+
+                if [ "${parameters.environment}" = "production" ]; then
+                  test -n "${parameters.changeTicket}" || {
+                    echo "POLICY_GATE=DENY reason=missing-change-ticket"
+                    exit 44
+                  }
+                  test -n "${parameters.approvedBy}" || {
+                    echo "POLICY_GATE=DENY reason=missing-approval"
+                    exit 45
+                  }
+                fi
+
+                echo "POLICY_GATE=PASS"

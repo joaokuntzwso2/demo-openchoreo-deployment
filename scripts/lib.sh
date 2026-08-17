@@ -2,7 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NS="${OPENCHOREO_NAMESPACE:-platform-demo}"
-CLUSTER="${K3D_CLUSTER_NAME:-openchoreo}"
+CLUSTER="${OPENCHOREO_CLUSTER_NAME:-${K3D_CLUSTER_NAME:-openchoreo-quick-start}}"
 
 log(){ printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }
 warn(){ printf '\n\033[1;33mWARN: %s\033[0m\n' "$*" >&2; }
