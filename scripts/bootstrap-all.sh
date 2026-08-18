@@ -7,7 +7,9 @@ on_error(){ rc=$?; warn "Bootstrap stopped at line ${BASH_LINENO[0]} (exit $rc).
 trap on_error ERR
 
 "$ROOT/scripts/preflight.sh"
+"$ROOT/scripts/prepare-host.sh"
 "$ROOT/scripts/install-openchoreo.sh"
+"$ROOT/scripts/reconcile-openchoreo-auth.sh"
 ensure_demo_context
 "$ROOT/scripts/start-webhook-receiver.sh"
 
@@ -88,9 +90,8 @@ for c in accounts-service customer-mcp fraud-service risk-mcp compliance-service
 done
 
 if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
-  log "Starting explicitly enabled Rancher integration"
-  "$ROOT/scripts/rancher.sh" up \
-    || die "Rancher was explicitly enabled but did not pass server/aggregation/registration health checks"
+  log "Starting optional Rancher management cluster"
+  "$ROOT/scripts/rancher.sh" up
 fi
 log "Loading deterministic financial scenarios"
 "$ROOT/scripts/bootstrap-data.sh"
@@ -109,7 +110,7 @@ fi
 log "Platform application bootstrap complete"
 printf '\nOpenChoreo: http://openchoreo.localhost:8080\n'
 if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
-  printf 'Rancher: https://localhost:8444/dashboard/\n'
+  printf 'Rancher: https://rancher.localhost:8444/dashboard/\n'
 else
   printf 'Rancher: disabled (optional)\n'
 fi

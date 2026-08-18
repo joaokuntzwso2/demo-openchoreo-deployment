@@ -13,7 +13,7 @@ printf '%-28s %s\n' 'OpenChoreo:' 'http://openchoreo.localhost:8080'
 printf '%-28s %s\n' 'Platform Artifacts:' 'http://openchoreo.localhost:8080/platform-artifacts'
 if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
   if "$ROOT/scripts/rancher.sh" health >/dev/null 2>&1; then
-    printf '%-28s %s\n' 'Rancher:' 'https://localhost:8444/dashboard/'
+    printf '%-28s %s\n' 'Rancher:' 'https://rancher.localhost:8444/dashboard/'
   else
     printf '%-28s %s\n' 'Rancher:' 'enabled but NOT READY'
   fi

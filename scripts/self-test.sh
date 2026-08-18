@@ -59,14 +59,14 @@ printf '  deterministic clean-room image/bootstrap invariants: PASS\n'
 
 grep -q 'kubernetes.default.svc' "$ROOT/services/k8s-ops-console/server.js" || { echo 'Kubernetes Ops Console is not using the in-cluster Kubernetes API' >&2; exit 1; }
 grep -q 'platform.demo/restartedAt' "$ROOT/services/k8s-ops-console/server.js" || { echo 'Kubernetes Ops Console safe restart action missing' >&2; exit 1; }
-grep -q 'rancher/rancher@sha256:5d0354e95d55f92da0f3c0fdcf59c07dacfe5bda886aac5273da4ca98c8c1376' "$ROOT/scripts/rancher.sh" || { echo 'Rancher integration missing or immutable Rancher image is not pinned to the showcase digest' >&2; exit 1; }
-if grep -q 'rancher/rancher:v2.12.10' "$ROOT/scripts/rancher.sh"; then
-  echo 'Obsolete Rancher v2.12.10 tag is still present' >&2
-  exit 1
-fi
-grep -q 'platform-webhook-receiver' "$ROOT/scripts/start-webhook-receiver.sh" || { echo 'Containerized webhook receiver integration missing' >&2; exit 1; }
-[[ -f "$ROOT/services/platform-webhook-receiver/Dockerfile" ]] || { echo 'Containerized webhook receiver Dockerfile missing' >&2; exit 1; }
-printf '  Kubernetes Ops + Rancher integration invariants: PASS\n'
+grep -q 'RANCHER_CLUSTER="${RANCHER_CLUSTER:-rancher-mgmt}"' "$ROOT/scripts/rancher.sh" || exit 1
+grep -q 'RANCHER_K3S_IMAGE="${RANCHER_K3S_IMAGE:-rancher/k3s:v1.35.5-k3s1}"' "$ROOT/scripts/rancher.sh" || exit 1
+grep -q 'RANCHER_CHART_VERSION="${RANCHER_CHART_VERSION:-2.14.3}"' "$ROOT/scripts/rancher.sh" || exit 1
+grep -q 'rancher-latest/rancher' "$ROOT/scripts/rancher.sh" || exit 1
+if grep -q 'docker run .*rancher/rancher' "$ROOT/scripts/rancher.sh"; then echo 'Old Docker Rancher implementation remains' >&2; exit 1; fi
+grep -q 'platform-webhook-receiver' "$ROOT/scripts/start-webhook-receiver.sh" || exit 1
+[[ -f "$ROOT/services/platform-webhook-receiver/Dockerfile" ]] || exit 1
+printf '  Kubernetes Ops + Helm-based Rancher integration invariants: PASS\n'
 
 grep -q 'telco-subscriber-service' "$ROOT/platform/components/telco.yaml" || exit 1
 grep -q 'telco-network-service' "$ROOT/platform/components/telco.yaml" || exit 1
@@ -114,6 +114,14 @@ grep -q -- '--update' "$ROOT/scripts/install-openchoreo.sh" || {
   exit 1
 }
 
+# Fresh-clone host/auth/catalog hardening invariants
+[[ -x "$ROOT/scripts/prepare-host.sh" ]] || exit 1
+grep -q 'fs.inotify.max_user_instances=2048' "$ROOT/scripts/prepare-host.sh" || exit 1
+grep -q 'svc.cluster.local' "$ROOT/scripts/reconcile-openchoreo-auth.sh" || exit 1
+grep -q 'reconcile-openchoreo-auth.sh' "$ROOT/scripts/bootstrap-all.sh" || exit 1
+grep -q 'wait-openchoreo-catalog.sh' "$ROOT/scripts/bootstrap-all.sh" || exit 1
+grep -q 'ENABLE_RANCHER:-0' "$ROOT/scripts/bootstrap-all.sh" || exit 1
+printf '  fresh-clone host/auth/catalog hardening invariants: PASS\n'
 # Platform Artifacts UI integration invariants
 for f in "$ROOT"/extensions/platform-artifacts-ui/scripts/*.sh; do bash -n "$f"; done
 python3 -c 'import ast,pathlib,sys; [ast.parse(p.read_text(), filename=str(p)) for p in pathlib.Path(sys.argv[1]).glob("*.py")]' "$ROOT/extensions/platform-artifacts-ui/scripts"

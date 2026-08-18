@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Destructive clean-room proof limited to this repository's k3d cluster, Rancher
-# container/volume, runtime state, webhook process and platform-demo/* images.
+# management k3d cluster, runtime state, webhook process and platform-demo/* images.
 set -Eeuo pipefail
 source "$(dirname "$0")/lib.sh"
 need docker; need k3d; need kubectl
