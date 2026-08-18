@@ -3717,7 +3717,7 @@ The ordinary demo can continue when Rancher is unavailable because Rancher is no
 For a qualified showcase where Rancher is mandatory:
 
 ```bash
-RANCHER_REQUIRED=1 ./demo.sh reset
+ENABLE_RANCHER=1 ./demo.sh rancher
 ```
 
 The strict showcase configuration can also require Rancher readiness through `.showcase.env`.
@@ -3750,9 +3750,9 @@ Representative flags include concepts such as:
 
 ```text
 ENABLE_RANCHER
-RANCHER_REQUIRED
+ENABLE_RANCHER
 SHOWCASE_STRICT
-SHOWCASE_REQUIRE_RANCHER
+ENABLE_RANCHER
 OPENCHOREO_CLUSTER_NAME
 SHOWCASE_ENABLE_AI
 SHOWCASE_REQUIRE_AI
@@ -4859,3 +4859,33 @@ For a deliberate rebuild of only the custom portal:
 
 Normal users and customers should not need that command; `./demo.sh reset` and `./demo.sh up` call the idempotent ensure flow automatically.
 
+
+
+## Optional Rancher contract
+
+Rancher is a complementary Kubernetes management view and is disabled by
+default. It is not required for any OpenChoreo capability in this showcase.
+The normal customer path remains:
+
+```bash
+./demo.sh reset
+```
+
+A successful default run reports `Rancher: disabled (optional)`.
+
+To experiment with Rancher against an existing OpenChoreo cluster:
+
+```bash
+./demo.sh rancher
+```
+
+To make Rancher part of an `up` or `reset` qualification run:
+
+```bash
+ENABLE_RANCHER=1 ./demo.sh up
+```
+
+When explicitly enabled, Rancher is a strict gate: its container, embedded
+Kubernetes `/readyz`, `v1.ext.cattle.io` APIService, imperative API endpoints,
+and downstream `cattle-cluster-agent` must all be healthy before Rancher is
+reported as ready.

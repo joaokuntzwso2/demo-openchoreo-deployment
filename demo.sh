@@ -17,7 +17,6 @@ case "$cmd" in
   status)
     ensure_demo_context
     "$ROOT/scripts/status.sh"
-    "$ROOT/scripts/rancher.sh" status || true
     ;;
   rancher)
     "$ROOT/scripts/rancher.sh" up
@@ -47,8 +46,10 @@ case "$cmd" in
     k3d cluster start "$CLUSTER"
     ensure_demo_context
     "$ROOT/scripts/start-webhook-receiver.sh"
-    "$ROOT/scripts/rancher.sh" start || true
-    "$ROOT/scripts/rancher.sh" register || true
+    if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
+      "$ROOT/scripts/rancher.sh" start
+      "$ROOT/scripts/rancher.sh" register
+    fi
     "$ROOT/scripts/status.sh"
     ;;
   destroy)
@@ -61,10 +62,10 @@ case "$cmd" in
 Usage: ./demo.sh [up|reset|verify|status|capabilities|readiness|prepare|ai|rancher|scenario|stop|start|destroy]
 
   up       Install/reconcile the complete platform application and verify it (default)
-  reset    Destructive clean-room rebuild: OpenChoreo + apps + Rancher + verification
+  reset    Destructive clean-room rebuild: OpenChoreo + apps + verification; Rancher optional
   verify   Run strict end-to-end verification without changing desired state
-  status   Show OpenChoreo, Kubernetes application and Rancher status
-  rancher  Start/register Rancher against the existing OpenChoreo k3d cluster
+  status   Show OpenChoreo/Kubernetes status and optional Rancher state
+  rancher  Explicitly start/register the optional Rancher integration
   scenario Run a named business/platform demonstration scenario
   stop     Stop the OpenChoreo cluster, Rancher and local webhook receiver
   start    Start a previously stopped local environment

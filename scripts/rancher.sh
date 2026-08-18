@@ -41,6 +41,50 @@ load_rancher_password
 RANCHER_URL="https://localhost:8444"
 RANCHER_CLUSTER_URL="https://host.k3d.internal:8444"
 
+container_running(){
+  [[ "$(docker inspect --format '{{.State.Running}}' "$RANCHER_CONTAINER" 2>/dev/null || true)" == "true" ]]
+}
+
+server_ping(){
+  [[ "$(curl -ksS --max-time 5 "$RANCHER_URL/ping" 2>/dev/null || true)" == "pong" ]]
+}
+
+embedded_kubernetes_ready(){
+  docker exec "$RANCHER_CONTAINER" kubectl get --raw='/readyz' >/dev/null 2>&1
+}
+
+aggregation_available(){
+  local available
+  available="$(docker exec "$RANCHER_CONTAINER" kubectl get apiservice v1.ext.cattle.io -o jsonpath='{.status.conditions[?(@.type=="Available")].status}' 2>/dev/null || true)"
+  [[ "$available" == "True" ]]
+}
+
+aggregation_has_endpoints(){
+  local addresses
+  addresses="$(docker exec "$RANCHER_CONTAINER" kubectl -n cattle-system get endpoints imperative-api-extension -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null || true)"
+  [[ -n "$addresses" ]]
+}
+
+verify_server(){
+  container_running && server_ping && embedded_kubernetes_ready && aggregation_available && aggregation_has_endpoints
+}
+
+wait_server_ready(){
+  local start=$SECONDS
+  while (( SECONDS-start < 300 )); do
+    if verify_server; then
+      log "Rancher server, embedded Kubernetes and API aggregation are Ready"
+      return 0
+    fi
+    sleep 5
+  done
+  warn "Rancher did not pass strict server/API aggregation health within 300s"
+  docker exec "$RANCHER_CONTAINER" kubectl get apiservice v1.ext.cattle.io -o wide 2>/dev/null || true
+  docker exec "$RANCHER_CONTAINER" kubectl -n cattle-system get svc,endpoints imperative-api-extension 2>/dev/null || true
+  docker logs "$RANCHER_CONTAINER" --tail 100 2>/dev/null || true
+  return 1
+}
+
 start_rancher(){
   if docker ps --format '{{.Names}}' | grep -Fxq "$RANCHER_CONTAINER"; then
     log "Rancher is already running"
@@ -55,13 +99,7 @@ start_rancher(){
       -v platform-rancher-data:/var/lib/rancher \
       "$RANCHER_IMAGE" >/dev/null
   fi
-  local start=$SECONDS
-  while (( SECONDS-start < 300 )); do
-    [[ "$(curl -ksS "$RANCHER_URL/ping" 2>/dev/null || true)" == "pong" ]] && return 0
-    sleep 4
-  done
-  warn "Rancher did not become healthy within 300s. Core OpenChoreo demo remains usable."
-  return 1
+  wait_server_ready
 }
 
 login(){
@@ -72,11 +110,12 @@ login(){
 }
 
 register_cluster(){
+  verify_server || { warn "Rancher server/API aggregation is not healthy"; return 1; }
   ensure_demo_context
   kubectl get deployment cattle-cluster-agent -n cattle-system >/dev/null 2>&1 && { log "Rancher agents already exist in the OpenChoreo cluster"; return 0; }
   local token cluster_id reg_id command current
   token="$(login || true)"
-  [[ -n "$token" ]] || { warn "Rancher API login is not ready; open $RANCHER_URL and register the cluster from Cluster Management if desired."; return 0; }
+  [[ -n "$token" ]] || { warn "Rancher API login is not ready."; return 1; }
 
   # Make the address embedded in downstream agent manifests resolvable from k3d.
   curl -ksS -X PUT "$RANCHER_URL/v3/settings/server-url" -H "Authorization: Bearer $token" -H 'content-type: application/json' \
@@ -89,7 +128,7 @@ register_cluster(){
     cluster_id="$(curl -ksS -X POST "$RANCHER_URL/v3/cluster" -H "Authorization: Bearer $token" -H 'content-type: application/json' \
       --data-binary '{"type":"cluster","name":"openchoreo","import":true}' | python3 -c 'import json,sys; print(json.load(sys.stdin).get("id", ""))' 2>/dev/null || true)"
   fi
-  [[ -n "$cluster_id" ]] || { warn "Could not create/find the Rancher registration object. Rancher itself is available at $RANCHER_URL."; return 0; }
+  [[ -n "$cluster_id" ]] || { warn "Could not create/find the Rancher registration object."; return 1; }
 
   reg_id=""
   local token_start=$SECONDS
@@ -126,6 +165,7 @@ register_cluster(){
 }
 
 verify_registration(){
+  verify_server || { warn "Rancher server/API aggregation is not healthy"; return 1; }
   ensure_demo_context
   local start=$SECONDS ready=0
   while (( SECONDS-start < 240 )); do
@@ -152,7 +192,8 @@ case "${1:-up}" in
   register) start_rancher; register_cluster ;;
   stop) docker stop "$RANCHER_CONTAINER" >/dev/null 2>&1 || true ;;
   destroy) docker rm -f "$RANCHER_CONTAINER" >/dev/null 2>&1 || true; docker volume rm platform-rancher-data >/dev/null 2>&1 || true ;;
+  health) verify_server ;;
   verify) verify_registration ;;
   status) docker ps -a --filter "name=^/${RANCHER_CONTAINER}$" --format 'Rancher: {{.Status}}'; printf 'URL: %s\nUser: admin\nPassword: %s\n' "$RANCHER_URL" "$RANCHER_PASSWORD" ;;
-  *) echo "Usage: $0 [up|start|register|verify|stop|destroy|status]" >&2; exit 2 ;;
+  *) echo "Usage: $0 [up|start|register|health|verify|stop|destroy|status]" >&2; exit 2 ;;
 esac

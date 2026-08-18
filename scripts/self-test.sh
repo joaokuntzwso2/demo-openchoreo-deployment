@@ -143,4 +143,44 @@ grep -q 'ensure-platform-artifacts-ui.sh' "$ROOT/scripts/bootstrap-all.sh" || {
 }
 printf '  deterministic containerd image verification + portal bootstrap: PASS\n'
 
+# Optional Rancher contract regression guards
+grep -q 'ENABLE_RANCHER:-0' "$ROOT/scripts/bootstrap-all.sh" || { echo 'Rancher must default off in bootstrap-all.sh' >&2; exit 1; }
+grep -q 'ENABLE_RANCHER:-0' "$ROOT/scripts/verify-clean-room.sh" || { echo 'Rancher must default off in verify-clean-room.sh' >&2; exit 1; }
+if grep -Eq 'ENABLE_RANCHER:-1|RANCHER_REQUIRED|SHOWCASE_REQUIRE_RANCHER' "$ROOT/scripts/bootstrap-all.sh" "$ROOT/scripts/verify-clean-room.sh" "$ROOT/.showcase.env.example"; then
+  echo 'Legacy Rancher false-pass contract remains' >&2
+  exit 1
+fi
+grep -q "kubectl get --raw='/readyz'" "$ROOT/scripts/rancher.sh" || { echo 'Rancher health does not verify embedded Kubernetes readiness' >&2; exit 1; }
+grep -q 'apiservice v1.ext.cattle.io' "$ROOT/scripts/rancher.sh" || { echo 'Rancher health does not verify API aggregation' >&2; exit 1; }
+grep -q 'imperative-api-extension' "$ROOT/scripts/rancher.sh" || { echo 'Rancher health does not verify imperative API endpoints' >&2; exit 1; }
+printf '  optional strict Rancher contract: PASS\n'
+
 printf '\n==> Static repository self-test PASSED\n'
+
+
+if grep -q "ENABLE_RANCHER:-1" "$ROOT/scripts/preflight.sh"; then
+  echo "preflight.sh still defaults Rancher on" >&2
+  exit 1
+fi
+
+if grep -Eq "export ENABLE_RANCHER=.1." "$ROOT/scripts/showcase-freeze-rancher.sh"; then
+  echo "showcase-freeze-rancher.sh still enables Rancher" >&2
+  exit 1
+fi
+
+if grep -q "RANCHER_REQUIRED" "$ROOT/scripts/showcase-freeze-rancher.sh"; then
+  echo "legacy RANCHER_REQUIRED remains" >&2
+  exit 1
+fi
+
+if grep -q "SHOWCASE_REQUIRE_RANCHER" "$ROOT/scripts/showcase-freeze-rancher.sh"; then
+  echo "legacy SHOWCASE_REQUIRE_RANCHER remains" >&2
+  exit 1
+fi
+
+grep -q "SKIP: Rancher is disabled (optional)" "$ROOT/scripts/showcase-readiness.sh" || {
+  echo "showcase-readiness.sh does not skip disabled Rancher" >&2
+  exit 1
+}
+
+printf "  Rancher default-off qualification: PASS\n"

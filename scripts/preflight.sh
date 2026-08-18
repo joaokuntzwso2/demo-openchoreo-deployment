@@ -23,7 +23,7 @@ printf '\nVersions:\n'; docker --version; k3d --version; kubectl version --clien
 read -r cpus mem_bytes < <(docker info --format '{{.NCPU}} {{.MemTotal}}' 2>/dev/null || echo '0 0')
 if [[ "$cpus" =~ ^[0-9]+$ ]] && (( cpus < 4 )); then die "Docker reports $cpus CPUs. Allocate at least 4 CPUs; 6 are recommended."; fi
 min_mem_bytes=10737418240
-if [[ "${ENABLE_RANCHER:-1}" == "1" ]]; then min_mem_bytes=12884901888; fi
+if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then min_mem_bytes=12884901888; fi
 if [[ "$mem_bytes" =~ ^[0-9]+$ ]] && (( mem_bytes > 0 && mem_bytes < min_mem_bytes )); then
   mem_gib="$(python3 - "$mem_bytes" <<'PY'
 import sys
@@ -32,7 +32,7 @@ PY
 )"
   die "Docker reports ${mem_gib} GiB RAM. This package runs OpenChoreo, observability, 19 app workloads and Rancher; allocate at least 12 GiB with Rancher enabled (16 GiB recommended), or set ENABLE_RANCHER=0 for a lighter OpenChoreo-only run."
 fi
-if [[ "$mem_bytes" =~ ^[0-9]+$ ]] && (( mem_bytes >= min_mem_bytes && mem_bytes < 17179869184 )); then warn "Docker has less than the recommended 16 GiB RAM. The complete stack can run, but Rancher plus observability and 19 application workloads may be tight."; fi
+if [[ "$mem_bytes" =~ ^[0-9]+$ ]] && (( mem_bytes >= min_mem_bytes && mem_bytes < 17179869184 )); then warn "Docker has less than the recommended 16 GiB RAM. OpenChoreo, observability and 19 application workloads may be tight."; fi
 if [[ "$(uname -s)" == "Darwin" && "$(uname -m)" == "arm64" ]]; then printf '\nApple Silicon detected. Recommended Colima configuration:\n  colima start --vm-type=vz --vz-rosetta --cpu 6 --memory 16\n'; fi
 
 log "Checking Docker VM image-filesystem headroom"
@@ -53,7 +53,7 @@ fi
 if ! k3d cluster list 2>/dev/null | awk 'NR>1 {print $1}' | grep -qx "$CLUSTER"; then
   log "Checking host ports for a fresh OpenChoreo installation"
   PORTS="8080 10081 10082 11080 18081 19080"
-  if [[ "${ENABLE_RANCHER:-1}" == "1" ]] && ! docker ps -a --format '{{.Names}}' | grep -Fxq platform-rancher; then PORTS="$PORTS 8444"; fi
+  if [[ "${ENABLE_RANCHER:-0}" == "1" ]] && ! docker ps -a --format '{{.Names}}' | grep -Fxq platform-rancher; then PORTS="$PORTS 8444"; fi
   python3 - $PORTS <<'PY'
 import socket,sys
 ports=[int(x) for x in sys.argv[1:]]; busy=[]

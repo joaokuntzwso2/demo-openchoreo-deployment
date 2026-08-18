@@ -18,31 +18,39 @@ echo "==> 2/5 Clean-room/runtime verification"
 
 echo
 echo "==> 3/5 Event-determinism checks"
+
 if [[ "${SHOWCASE_STRICT:-0}" == "1" ]]; then
-  if [[ -z "${RANCHER_IMAGE:-}" ]]; then
-    echo "ERROR: SHOWCASE_STRICT=1 but RANCHER_IMAGE is unset." >&2
-    exit 1
+  if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
+    if [[ -z "${RANCHER_IMAGE:-}" ]]; then
+      echo "ERROR: ENABLE_RANCHER=1 with SHOWCASE_STRICT=1 requires RANCHER_IMAGE." >&2
+      exit 1
+    fi
+
+    if [[ "$RANCHER_IMAGE" == *":latest" ]]; then
+      echo "ERROR: strict optional Rancher qualification refuses :latest." >&2
+      exit 1
+    fi
+
+    if [[ "$RANCHER_IMAGE" != *@sha256:* ]]; then
+      echo "ERROR: strict optional Rancher qualification requires a digest-pinned image." >&2
+      exit 1
+    fi
+
+    echo "PASS: optional Rancher image is immutable: $RANCHER_IMAGE"
+  else
+    echo "PASS: strict OpenChoreo qualification does not require optional Rancher"
   fi
-  if [[ "$RANCHER_IMAGE" == *":latest" ]]; then
-    echo "ERROR: SHOWCASE_STRICT=1 refuses a mutable Rancher :latest tag." >&2
-    echo "Run: ./scripts/showcase-freeze-rancher.sh" >&2
-    exit 1
-  fi
-  if [[ "$RANCHER_IMAGE" != *@sha256:* ]]; then
-    echo "ERROR: SHOWCASE_STRICT=1 requires Rancher to be pinned by digest." >&2
-    exit 1
-  fi
-  echo "PASS: Rancher image is immutable: $RANCHER_IMAGE"
 else
-  echo "WARN: SHOWCASE_STRICT is not enabled; suitable for development, not event qualification."
+  echo "WARN: SHOWCASE_STRICT is not enabled"
 fi
 
 echo
-echo "==> 4/5 SUSE Rancher verification"
-if [[ "${SHOWCASE_REQUIRE_RANCHER:-${RANCHER_REQUIRED:-0}}" == "1" ]]; then
+echo "==> 4/5 Optional SUSE Rancher verification"
+
+if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
   ./scripts/rancher.sh verify
 else
-  ./scripts/rancher.sh verify || echo "WARN: Rancher verification is optional in this run."
+  echo "SKIP: Rancher is disabled (optional)"
 fi
 
 echo

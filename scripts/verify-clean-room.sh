@@ -138,21 +138,20 @@ PY
 log "Verifying Payments observability release"
 kubectl get renderedrelease payments-service-development-observability -n "$NS" >/dev/null
 
-if [[ "${ENABLE_RANCHER:-1}" == "1" ]]; then
-  log "Verifying Rancher server and downstream cluster registration"
-  if "$ROOT/scripts/rancher.sh" verify; then
-    :
-  elif [[ "${RANCHER_REQUIRED:-0}" == "1" ]]; then
-    die "Rancher was requested as a strict acceptance gate but cluster registration is not Ready"
-  else
-    warn "Rancher registration is not ready yet; core OpenChoreo application verification passed. Run ./demo.sh rancher to retry, or use RANCHER_REQUIRED=1 for a strict clean-room gate."
-  fi
+if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
+  log "Verifying explicitly enabled Rancher integration"
+  "$ROOT/scripts/rancher.sh" verify \
+    || die "Rancher was explicitly enabled but failed its strict acceptance gate"
 fi
-
 # Verify Platform Artifacts UI extension
 if [[ "${ENABLE_PLATFORM_ARTIFACTS_UI:-1}" == "1" ]]; then
   log "Verifying dynamic OpenChoreo Platform Artifacts UI"
   "$ROOT/extensions/platform-artifacts-ui/scripts/verify-platform-artifacts-ui.sh"
 fi
 log "CLEAN-ROOM CORE VERIFICATION PASSED"
-printf 'Platform Portal: %s\nFinancial UI: %s\nFinancial Agent: %s\nTelco Portal: %s\nKubernetes Ops: %s\nRancher: https://localhost:8444\n' "$PORTAL" "$FIN" "$AGENT" "$TELCO" "$OPS"
+printf 'Platform Portal: %s\nFinancial UI: %s\nFinancial Agent: %s\nTelco Portal: %s\nKubernetes Ops: %s\n' "$PORTAL" "$FIN" "$AGENT" "$TELCO" "$OPS"
+if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
+  printf 'Rancher: https://localhost:8444/dashboard/\n'
+else
+  printf 'Rancher: disabled (optional)\n'
+fi

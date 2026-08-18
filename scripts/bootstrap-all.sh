@@ -87,16 +87,11 @@ for c in accounts-service customer-mcp fraud-service risk-mcp compliance-service
   wait_ready releasebinding "${c}-development" "$NS" 360
 done
 
-if [[ "${ENABLE_RANCHER:-1}" == "1" ]]; then
-  log "Starting Rancher before scenario seeding so management access is independent of demo-data loading"
-  if ! "$ROOT/scripts/rancher.sh" up; then
-    if [[ "${RANCHER_REQUIRED:-0}" == "1" ]]; then
-      die "Rancher was requested as a strict bootstrap requirement but the server did not become healthy"
-    fi
-    warn "Rancher did not become healthy yet; continuing core application bootstrap. Retry with ./demo.sh rancher."
-  fi
+if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
+  log "Starting explicitly enabled Rancher integration"
+  "$ROOT/scripts/rancher.sh" up \
+    || die "Rancher was explicitly enabled but did not pass server/aggregation/registration health checks"
 fi
-
 log "Loading deterministic financial scenarios"
 "$ROOT/scripts/bootstrap-data.sh"
 log "Loading deterministic telecom scenarios"
@@ -112,7 +107,12 @@ fi
 
 "$ROOT/scripts/status.sh"
 log "Platform application bootstrap complete"
-printf '\nOpenChoreo: http://openchoreo.localhost:8080\nRancher: https://localhost:8444\n'
+printf '\nOpenChoreo: http://openchoreo.localhost:8080\n'
+if [[ "${ENABLE_RANCHER:-0}" == "1" ]]; then
+  printf 'Rancher: https://localhost:8444/dashboard/\n'
+else
+  printf 'Rancher: disabled (optional)\n'
+fi
 for c in platform-portal financial-bff financial-agent telco-portal telco-mcp k8s-ops-console telco-subscriber-service telco-network-service telco-bss-facade; do
   u="$(external_url "$c" || true)"; [[ -n "$u" ]] && printf '%-28s %s\n' "$c:" "$u"
 done
