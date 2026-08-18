@@ -97,6 +97,7 @@ log "Loading deterministic financial scenarios"
 "$ROOT/scripts/bootstrap-data.sh"
 log "Loading deterministic telecom scenarios"
 "$ROOT/scripts/bootstrap-telco-data.sh"
+"$ROOT/scripts/wait-openchoreo-catalog.sh"
 
 
 # Platform Artifacts UI extension

@@ -158,10 +158,11 @@ if grep -Eq 'ENABLE_RANCHER:-1|RANCHER_REQUIRED|SHOWCASE_REQUIRE_RANCHER' "$ROOT
   echo 'Legacy Rancher false-pass contract remains' >&2
   exit 1
 fi
-grep -q "kubectl get --raw='/readyz'" "$ROOT/scripts/rancher.sh" || { echo 'Rancher health does not verify embedded Kubernetes readiness' >&2; exit 1; }
-grep -q 'apiservice v1.ext.cattle.io' "$ROOT/scripts/rancher.sh" || { echo 'Rancher health does not verify API aggregation' >&2; exit 1; }
-grep -q 'imperative-api-extension' "$ROOT/scripts/rancher.sh" || { echo 'Rancher health does not verify imperative API endpoints' >&2; exit 1; }
-printf '  optional strict Rancher contract: PASS\n'
+grep -q 'wait node --all' "$ROOT/scripts/rancher.sh" || { echo 'Rancher verification does not verify management-cluster node readiness' >&2; exit 1; }
+grep -q '"$RANCHER_URL/readyz"' "$ROOT/scripts/rancher.sh" || { echo 'Rancher verification does not verify Rancher /readyz' >&2; exit 1; }
+grep -q 'apiservice v1.ext.cattle.io' "$ROOT/scripts/rancher.sh" || { echo 'Rancher verification does not verify API aggregation' >&2; exit 1; }
+grep -q 'get endpoints imperative-api-extension' "$ROOT/scripts/rancher.sh" || { echo 'Rancher verification does not verify imperative API endpoints' >&2; exit 1; }
+printf '  optional strict Helm-based Rancher contract: PASS\n'
 
 printf '\n==> Static repository self-test PASSED\n'
 

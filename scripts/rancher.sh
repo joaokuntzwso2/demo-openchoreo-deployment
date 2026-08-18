@@ -87,6 +87,8 @@ install_rancher() {
 
 verify() {
   exists || die "Rancher cluster does not exist"
+
+  kubectl --context "$RANCHER_CONTEXT"     wait node --all     --for=condition=Ready     --timeout=180s >/dev/null
   kubectl --context "$RANCHER_CONTEXT" -n cattle-system rollout status deployment/rancher --timeout=300s
   start=$SECONDS
   while (( SECONDS-start < 300 )); do
@@ -94,10 +96,20 @@ verify() {
     sleep 5
   done
   [[ "$(curl -ksS --max-time 5 "$RANCHER_URL/readyz" 2>/dev/null || true)" == "ok" ]] || die "Rancher /readyz failed"
-  if kubectl --context "$RANCHER_CONTEXT" get apiservice v1.ext.cattle.io >/dev/null 2>&1; then
-    available="$(kubectl --context "$RANCHER_CONTEXT" get apiservice v1.ext.cattle.io -o jsonpath='{range .status.conditions[?(@.type=="Available")]}{.status}{end}')"
-    [[ "$available" == "True" ]] || die "v1.ext.cattle.io is not Available=True"
-  fi
+  kubectl --context "$RANCHER_CONTEXT"     get apiservice v1.ext.cattle.io >/dev/null 2>&1     || die "Rancher APIService v1.ext.cattle.io does not exist"
+
+  available="$(
+    kubectl --context "$RANCHER_CONTEXT"       get apiservice v1.ext.cattle.io       -o jsonpath='{range .status.conditions[?(@.type=="Available")]}{.status}{end}'
+  )"
+
+  [[ "$available" == "True" ]]     || die "Rancher APIService v1.ext.cattle.io is not Available=True"
+
+  imperative_endpoints="$(
+    kubectl --context "$RANCHER_CONTEXT"       -n cattle-system       get endpoints imperative-api-extension       -o jsonpath='{range .subsets[*].addresses[*]}{.ip}{"\n"}{end}'       2>/dev/null || true
+  )"
+
+  [[ -n "$imperative_endpoints" ]]     || die "Rancher imperative-api-extension has no ready endpoints"
+
   log "Rancher management UI: PASS"
   printf '  %s\n' "$RANCHER_URL"
 }
