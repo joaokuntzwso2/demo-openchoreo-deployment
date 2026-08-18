@@ -144,7 +144,7 @@ def repair_and_extend_self_test() -> None:
             raise SystemExit("ERROR: final self-test success marker not found")
         block = r'''# Platform Artifacts UI integration invariants
 for f in "$ROOT"/extensions/platform-artifacts-ui/scripts/*.sh; do bash -n "$f"; done
-python3 -m py_compile "$ROOT"/extensions/platform-artifacts-ui/scripts/*.py
+python3 -c 'import ast,pathlib,sys; [ast.parse(x.read_text(), filename=str(x)) for x in pathlib.Path(sys.argv[1]).glob("*.py")]' "$ROOT/extensions/platform-artifacts-ui/scripts"
 python3 "$ROOT/extensions/platform-artifacts-ui/scripts/patch-custom-artifact-metadata.py" "$ROOT" --check
 [[ -x "$ROOT/extensions/platform-artifacts-ui/scripts/ensure-platform-artifacts-ui.sh" ]] || { echo 'Platform Artifacts ensure script missing' >&2; exit 1; }
 grep -q 'ensure-platform-artifacts-ui.sh' "$ROOT/scripts/bootstrap-all.sh" || { echo 'bootstrap is missing Platform Artifacts UI ensure hook' >&2; exit 1; }
@@ -180,11 +180,13 @@ def patch_showcase_env() -> None:
 def patch_gitignore() -> None:
     path = root / ".gitignore"
     text = path.read_text() if path.exists() else ""
-    entry = "extensions/platform-artifacts-ui/.work/"
-    if entry not in text.splitlines():
+    entries = ["__pycache__/", "*.py[cod]", ".pytest_cache/", ".mypy_cache/", "extensions/platform-artifacts-ui/.work/"]
+    existing = set(text.splitlines())
+    missing = [entry for entry in entries if entry not in existing]
+    if missing:
         if text and not text.endswith("\n"):
             text += "\n"
-        text += "\n# Generated OpenChoreo Platform Artifacts portal build cache\n" + entry + "\n"
+        text += "\n# Generated Python / Platform Artifacts build caches\n" + "\n".join(missing) + "\n"
         path.write_text(text)
 
 def patch_readme() -> None:

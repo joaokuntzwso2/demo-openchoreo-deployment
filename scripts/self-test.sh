@@ -74,11 +74,11 @@ grep -q 'telco-bss-facade' "$ROOT/platform/components/telco.yaml" || exit 1
 grep -q 'telco-mcp' "$ROOT/platform/components/telco.yaml" || exit 1
 printf '  OpenChoreo-native telecom adaptation: PASS\n'
 
-if grep -RniE 'banking technology fair|banking fair|\bfair\b|bank-demo|bank-valkey|bank_demo_|bank-customer-mcp|bank-risk-mcp|bank-compliance-mcp' "$ROOT" --exclude-dir=runtime --exclude-dir=.git --exclude=self-test.sh >/tmp/platform-demo-old-brand.$$ 2>/dev/null; then
+if grep -RniIE 'banking technology fair|banking fair|\bfair\b|bank-demo|bank-valkey|bank_demo_|bank-customer-mcp|bank-risk-mcp|bank-compliance-mcp' "$ROOT" --exclude-dir=runtime --exclude-dir=.git --exclude-dir=__pycache__ --exclude-dir=.work --exclude-dir=node_modules --exclude='*.pyc' --exclude=self-test.sh >/tmp/platform-demo-old-brand.$$ 2>/dev/null; then
   cat /tmp/platform-demo-old-brand.$$ >&2; rm -f /tmp/platform-demo-old-brand.$$; echo 'Legacy fair branding remains in the repository' >&2; exit 1
 fi
 rm -f /tmp/platform-demo-old-brand.$$ 2>/dev/null || true
-if grep -RniE '/Users/[^/]+|/mnt/data/' "$ROOT" --exclude-dir=runtime --exclude-dir=.git --exclude=self-test.sh >/tmp/platform-demo-paths.$$ 2>/dev/null; then
+if grep -RniIE '/Users/[^/]+|/mnt/data/' "$ROOT" --exclude-dir=runtime --exclude-dir=.git --exclude-dir=__pycache__ --exclude-dir=.work --exclude-dir=node_modules --exclude='*.pyc' --exclude=self-test.sh >/tmp/platform-demo-paths.$$ 2>/dev/null; then
   cat /tmp/platform-demo-paths.$$ >&2; rm -f /tmp/platform-demo-paths.$$; echo 'Machine-specific paths remain in the repository' >&2; exit 1
 fi
 rm -f /tmp/platform-demo-paths.$$ 2>/dev/null || true
@@ -116,7 +116,8 @@ grep -q -- '--update' "$ROOT/scripts/install-openchoreo.sh" || {
 
 # Platform Artifacts UI integration invariants
 for f in "$ROOT"/extensions/platform-artifacts-ui/scripts/*.sh; do bash -n "$f"; done
-python3 -m py_compile "$ROOT"/extensions/platform-artifacts-ui/scripts/*.py
+python3 -c 'import ast,pathlib,sys; [ast.parse(p.read_text(), filename=str(p)) for p in pathlib.Path(sys.argv[1]).glob("*.py")]' "$ROOT/extensions/platform-artifacts-ui/scripts"
+python3 "$ROOT/extensions/platform-artifacts-ui/scripts/patch-custom-artifact-metadata.py" "$ROOT" --check
 [[ -x "$ROOT/extensions/platform-artifacts-ui/scripts/ensure-platform-artifacts-ui.sh" ]] || { echo 'Platform Artifacts ensure script missing' >&2; exit 1; }
 grep -q 'ensure-platform-artifacts-ui.sh' "$ROOT/scripts/bootstrap-all.sh" || { echo 'bootstrap is missing Platform Artifacts UI ensure hook' >&2; exit 1; }
 grep -q 'verify-platform-artifacts-ui.sh' "$ROOT/scripts/verify-clean-room.sh" || { echo 'clean-room verifier is missing Platform Artifacts UI verification' >&2; exit 1; }

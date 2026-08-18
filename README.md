@@ -29,59 +29,98 @@ The demo includes:
 
 The objective is to demonstrate not only **how applications run on OpenChoreo**, but also how a platform team can **extend OpenChoreo into an opinionated enterprise platform**.
 
----
-
 ## Quick Start
 
-This repository is designed as a reproducible, one-command OpenChoreo
-showcase environment.
+This repository is designed to be reproducible from a fresh clone. For the complete local showcase, the normal customer path is:
 
-The default installation includes:
+```bash
+git clone https://github.com/joaokuntzwso2/demo-openchoreo-deployment.git
+cd demo-openchoreo-deployment
+./demo.sh reset
+```
 
-- OpenChoreo v1.2.2
-- 10 platform Projects across development, staging and production
-- 19 application Components
-- regulated ProjectType and ComponentType golden paths
-- reusable runtime-hardening Trait
-- managed Valkey ResourceType and Resource
-- release governance Workflows
-- OpenChoreo authorization roles and bindings
-- financial-services and telecom demonstration domains
-- OpenChoreo observability
-- Kubernetes Operations Console
-- SUSE Rancher integration
-- the enhanced OpenChoreo Platform Artifacts UI
+`./demo.sh reset` is the clean-room installation and acceptance path. It validates the workstation, installs OpenChoreo v1.2.2, creates the development/staging/production platform topology, applies the custom regulated platform abstractions, creates all 10 Projects and 30 ProjectReleaseBindings, builds and deploys all 19 application Components, provisions the managed Valkey resource, configures authorization and governance, starts the financial-services and telecom scenarios, starts Rancher when enabled, reconciles the 17 demo-owned Platform Artifacts, builds/deploys the enhanced OpenChoreo portal for the actual Kubernetes node architecture, and runs end-to-end verification.
 
-The Platform Artifacts UI is installed automatically as part of the normal
-bootstrap. It dynamically discovers the live OpenChoreo platform abstractions
-and presents them in a structured catalog instead of requiring users to inspect
-large Kubernetes YAML documents.
+No separate Platform Artifacts installer, metadata repair, manual `kubectl label`, Backstage build, or architecture-specific command is required for a healthy fresh clone.
 
 ### Prerequisites
 
-The workstation requires:
+Install Docker (or Colima), Docker Buildx, k3d, kubectl, Helm, curl, Python 3, and Git. For the full stack, use approximately 6 CPUs, 16 GiB RAM, and at least 25 GiB of free container-storage headroom.
 
-- Docker or Colima
-- Docker Buildx
-- k3d
-- kubectl
-- Helm
-- curl
-- Python 3
-- Git
-
-For the complete local environment, approximately 6 CPUs, 16 GiB of memory,
-and 25 GiB of available container storage are recommended.
-
-On macOS with Colima:
+On Apple Silicon with Colima:
 
 ```bash
 colima start \
   --vm-type=vz \
   --vz-rosetta \
   --cpu 6 \
-  --memory 16
-  
+  --memory 16 \
+  --disk 100
+```
+
+Confirm Docker is healthy:
+
+```bash
+docker info
+docker system df
+```
+
+### Start from scratch
+
+```bash
+./demo.sh reset
+```
+
+A successful clean installation ends with:
+
+```text
+FULL CLEAN-ROOM RUN PASSED
+```
+
+The Platform Artifacts portal build is architecture-aware. The bootstrap detects the actual k3d node architecture and builds or reuses the matching `arm64` or `amd64` image automatically.
+
+### Verify and obtain URLs
+
+```bash
+./demo.sh verify
+./demo.sh status
+./demo.sh capabilities
+```
+
+The primary interfaces are:
+
+```text
+OpenChoreo:
+http://openchoreo.localhost:8080
+
+Platform Artifacts:
+http://openchoreo.localhost:8080/platform-artifacts
+```
+
+Application URLs are resolved dynamically and printed by `./demo.sh status`.
+
+### Reconcile an existing installation
+
+```bash
+./demo.sh up
+```
+
+For reproducibility/customer qualification, use `./demo.sh reset`.
+
+### Optional AI capabilities
+
+The base showcase and Platform Artifacts UI do not require an OpenAI API key. To enable the OpenChoreo AI-assisted capabilities, provide the key only at runtime:
+
+```bash
+read -rsp "OpenAI API key: " OPENAI_API_KEY
+echo
+export OPENAI_API_KEY
+./demo.sh ai
+unset OPENAI_API_KEY
+```
+
+Never commit the key.
+
 ---
 
 # 1. Executive summary
