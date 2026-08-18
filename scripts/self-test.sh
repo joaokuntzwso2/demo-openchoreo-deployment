@@ -126,4 +126,21 @@ grep -q 'patch-openchoreo-dockerfile.py' "$ROOT/extensions/platform-artifacts-ui
 if grep -q -- '--platform linux/amd64' "$ROOT/extensions/platform-artifacts-ui/scripts/build-platform-artifacts-ui.sh"; then echo 'Platform Artifacts build still hard-codes linux/amd64' >&2; exit 1; fi
 printf '  architecture-native Platform Artifacts UI integration: PASS\n'
 
+# Deterministic containerd image-presence regression guard
+for f in "$ROOT/scripts/build-images.sh" "$ROOT/scripts/ensure-app-images.sh"; do
+  if grep -Eq 'ctr -n k8s\.io images ls -q.*[|].*grep .*-[A-Za-z]*q' "$f"; then
+    echo "$f contains a pipefail-unsafe ctr|grep -q image-presence check" >&2
+    exit 1
+  fi
+  grep -q 'images="$(docker exec "$server_node" ctr -n k8s.io images ls -q' "$f" || {
+    echo "$f does not capture the complete containerd image list before matching" >&2
+    exit 1
+  }
+done
+grep -q 'ensure-platform-artifacts-ui.sh' "$ROOT/scripts/bootstrap-all.sh" || {
+  echo 'bootstrap is missing automatic Platform Artifacts UI installation' >&2
+  exit 1
+}
+printf '  deterministic containerd image verification + portal bootstrap: PASS\n'
+
 printf '\n==> Static repository self-test PASSED\n'

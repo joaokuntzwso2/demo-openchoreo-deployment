@@ -123,6 +123,25 @@ Never commit the key.
 
 ---
 
+### Fresh-clone acceptance criteria
+
+A customer-ready run must complete from a fresh clone with only:
+
+```bash
+./demo.sh reset
+```
+
+The bootstrap must continue past Projects through all 19 Components and the enhanced Platform Artifacts portal. The final verification checks the 19 application images inside the actual k3d containerd image store, all 19 OpenChoreo Components and development ReleaseBindings, and the dynamic Platform Artifacts UI.
+
+If a run is interrupted after Projects were created, the idempotent recovery command is:
+
+```bash
+./demo.sh up
+```
+
+No manual Component creation, image import, Backstage deployment, or artifact labeling should be required.
+
+
 # 1. Executive summary
 
 The repository creates a complete local OpenChoreo platform running on a k3d Kubernetes cluster and deploys a multi-project application estate into it.

@@ -39,9 +39,13 @@ PY
 }
 
 image_present(){
-  local svc="$1"
-  docker exec "$server_node" ctr -n k8s.io images ls -q 2>/dev/null \
-    | grep -Fxq "docker.io/platform-demo/${svc}:1.0.0"
+  local svc="$1" expected images
+  expected="docker.io/platform-demo/${svc}:1.0.0"
+
+  # Avoid ctr|grep -q under pipefail: grep may exit early after a match,
+  # ctr receives SIGPIPE, and the pipeline becomes a false negative.
+  images="$(docker exec "$server_node" ctr -n k8s.io images ls -q 2>/dev/null)" || return 1
+  grep -Fx "$expected" <<<"$images" >/dev/null
 }
 
 import_one(){
@@ -87,7 +91,7 @@ log "Building 19 deterministic single-platform platform application images for $
 # k3d/containerd receives a simple image manifest.
 export BUILDX_NO_DEFAULT_ATTESTATIONS=1
 build_help="$(docker buildx build --help 2>/dev/null || true)"
-printf '%s' "$build_help" | grep -q -- '--provenance' \
+grep -q -- '--provenance' <<<"$build_help" \
   || die "Docker Buildx is too old: --provenance is unavailable. Update Docker/Colima before running this demo."
 for svc in "${services[@]}"; do
   image="platform-demo/${svc}:1.0.0"
@@ -97,7 +101,7 @@ for svc in "${services[@]}"; do
   if [[ "${PLATFORM_DEMO_NO_CACHE:-0}" == "1" ]]; then
     args+=(--no-cache --pull)
   fi
-  if printf '%s' "$build_help" | grep -q -- '--sbom'; then
+  if grep -q -- '--sbom' <<<"$build_help"; then
     args+=(--sbom=false)
   fi
   docker "${args[@]}" -t "$image" -f "$ROOT/services/$svc/Dockerfile" "$ROOT"

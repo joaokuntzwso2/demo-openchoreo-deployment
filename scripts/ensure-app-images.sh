@@ -9,9 +9,13 @@ server_node="k3d-${CLUSTER}-server-0"
 docker inspect "$server_node" >/dev/null 2>&1 || die "Cannot find k3d server node $server_node"
 
 image_present(){
-  local svc="$1"
-  docker exec "$server_node" ctr -n k8s.io images ls -q 2>/dev/null \
-    | grep -Fxq "docker.io/platform-demo/${svc}:1.0.0"
+  local svc="$1" expected images
+  expected="docker.io/platform-demo/${svc}:1.0.0"
+
+  # Avoid ctr|grep -q under pipefail: grep may exit early after a match,
+  # ctr receives SIGPIPE, and the pipeline becomes a false negative.
+  images="$(docker exec "$server_node" ctr -n k8s.io images ls -q 2>/dev/null)" || return 1
+  grep -Fx "$expected" <<<"$images" >/dev/null
 }
 
 missing=()
