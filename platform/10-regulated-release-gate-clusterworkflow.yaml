@@ -2,11 +2,16 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: ClusterWorkflow
 metadata:
   name: regulated-release-gate
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   annotations:
     openchoreo.dev/display-name: Regulated Release Gate
     openchoreo.dev/description: >-
       Reusable cluster-wide release evidence workflow for regulated workloads.
       It demonstrates organization-wide workflow governance on the OpenChoreo Workflow Plane.
+    demo.openchoreo.dev/display-name: "Regulated Release Gate"
+    demo.openchoreo.dev/category: "Governance Workflow"
+    demo.openchoreo.dev/description: "Reusable release control validating security, risk, change-ticket and approval evidence."
 spec:
   workflowPlaneRef:
     kind: ClusterWorkflowPlane

@@ -2,6 +2,12 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: AuthzRole
 metadata:
   name: platform-auditor
+  annotations:
+    demo.openchoreo.dev/display-name: "Platform Auditor"
+    demo.openchoreo.dev/category: "Access Control"
+    demo.openchoreo.dev/description: "Read-oriented OpenChoreo role for application, release and observability evidence."
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   namespace: platform-demo
 spec:
   description: Read-only platform auditor with observability and AI-report visibility.
@@ -24,6 +30,12 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: ClusterAuthzRoleBinding
 metadata:
   name: platform-demo-developers
+  annotations:
+    demo.openchoreo.dev/display-name: "Platform Demo Developers"
+    demo.openchoreo.dev/category: "Access Control"
+    demo.openchoreo.dev/description: "Developer authorization binding with environment-aware restrictions around production changes."
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
 spec:
   entitlement:
     claim: groups
@@ -53,6 +65,12 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: AuthzRoleBinding
 metadata:
   name: platform-demo-auditors
+  annotations:
+    demo.openchoreo.dev/display-name: "Platform Demo Auditors"
+    demo.openchoreo.dev/category: "Access Control"
+    demo.openchoreo.dev/description: "Binds the showcase auditor subject to the platform-auditor role."
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   namespace: platform-demo
 spec:
   entitlement:

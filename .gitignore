@@ -226,3 +226,6 @@ generated-local/
 .azure/
 .config/gcloud/
 .showcase.env
+
+# Generated OpenChoreo Platform Artifacts portal build cache
+extensions/platform-artifacts-ui/.work/

@@ -2,9 +2,14 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: ClusterProjectType
 metadata:
   name: regulated-platform
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   annotations:
     openchoreo.dev/display-name: Regulated Platform Cell
     openchoreo.dev/description: Platform golden path with quotas, Pod Security labels, RBAC and default-deny ingress.
+    demo.openchoreo.dev/display-name: "Regulated Platform"
+    demo.openchoreo.dev/category: "Golden Path"
+    demo.openchoreo.dev/description: "Project golden path that materializes regulated environment cells with quotas, defaults, networking and audit controls."
 spec:
   parameters:
     openAPIV3Schema:

@@ -2,9 +2,14 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: Resource
 metadata:
   name: payment-idempotency-cache
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   namespace: platform-demo
   annotations:
     openchoreo.dev/display-name: Payment Idempotency Cache
+    demo.openchoreo.dev/display-name: "Payment Idempotency Cache"
+    demo.openchoreo.dev/category: "Managed Resource Instance"
+    demo.openchoreo.dev/description: "Managed cache instance consumed by payments-service through an OpenChoreo Resource dependency."
 spec:
   owner:
     projectName: payments

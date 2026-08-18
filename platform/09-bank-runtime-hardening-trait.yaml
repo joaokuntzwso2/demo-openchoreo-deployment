@@ -2,11 +2,16 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: ClusterTrait
 metadata:
   name: bank-runtime-hardening
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   annotations:
     openchoreo.dev/display-name: Bank Runtime Hardening
     openchoreo.dev/description: >-
       Reusable banking runtime baseline. It hardens rendered Deployments and creates
       a PodDisruptionBudget without requiring application teams to author Kubernetes policy.
+    demo.openchoreo.dev/display-name: "Bank Runtime Hardening"
+    demo.openchoreo.dev/category: "Security & Runtime Policy"
+    demo.openchoreo.dev/description: "Reusable runtime security baseline including seccomp, capability drop, privilege restrictions and disruption protection."
 spec:
   parameters:
     openAPIV3Schema:

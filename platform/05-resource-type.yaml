@@ -2,9 +2,14 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: ClusterResourceType
 metadata:
   name: platform-valkey-cache
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   annotations:
     openchoreo.dev/display-name: Platform Valkey Cache
     openchoreo.dev/description: Local-demo managed cache. Production variant should use a managed provisioner and external secret generator.
+    demo.openchoreo.dev/display-name: "Platform Valkey Cache"
+    demo.openchoreo.dev/category: "Managed Resource"
+    demo.openchoreo.dev/description: "Platform-managed Valkey resource abstraction consumed through OpenChoreo resource bindings."
 spec:
   parameters:
     openAPIV3Schema:

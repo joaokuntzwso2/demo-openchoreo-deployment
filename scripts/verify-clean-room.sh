@@ -149,5 +149,10 @@ if [[ "${ENABLE_RANCHER:-1}" == "1" ]]; then
   fi
 fi
 
+# Verify Platform Artifacts UI extension
+if [[ "${ENABLE_PLATFORM_ARTIFACTS_UI:-1}" == "1" ]]; then
+  log "Verifying dynamic OpenChoreo Platform Artifacts UI"
+  "$ROOT/extensions/platform-artifacts-ui/scripts/verify-platform-artifacts-ui.sh"
+fi
 log "CLEAN-ROOM CORE VERIFICATION PASSED"
 printf 'Platform Portal: %s\nFinancial UI: %s\nFinancial Agent: %s\nTelco Portal: %s\nKubernetes Ops: %s\nRancher: https://localhost:8444\n' "$PORTAL" "$FIN" "$AGENT" "$TELCO" "$OPS"

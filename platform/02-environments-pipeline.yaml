@@ -2,9 +2,14 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: Environment
 metadata:
   name: development
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   namespace: platform-demo
   annotations:
     openchoreo.dev/display-name: Platform Development
+    demo.openchoreo.dev/display-name: "Development"
+    demo.openchoreo.dev/category: "Delivery Environment"
+    demo.openchoreo.dev/description: "OpenChoreo development environment used by the platform-standard delivery pipeline."
 spec:
   dataPlaneRef:
     kind: ClusterDataPlane
@@ -15,9 +20,14 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: Environment
 metadata:
   name: staging
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   namespace: platform-demo
   annotations:
     openchoreo.dev/display-name: Platform Staging
+    demo.openchoreo.dev/display-name: "Staging"
+    demo.openchoreo.dev/category: "Delivery Environment"
+    demo.openchoreo.dev/description: "OpenChoreo staging environment used by the platform-standard delivery pipeline."
 spec:
   dataPlaneRef:
     kind: ClusterDataPlane
@@ -28,9 +38,14 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: Environment
 metadata:
   name: production
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   namespace: platform-demo
   annotations:
     openchoreo.dev/display-name: Platform Production
+    demo.openchoreo.dev/display-name: "Production"
+    demo.openchoreo.dev/category: "Delivery Environment"
+    demo.openchoreo.dev/description: "OpenChoreo production environment used by the platform-standard delivery pipeline."
 spec:
   dataPlaneRef:
     kind: ClusterDataPlane
@@ -41,10 +56,15 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: DeploymentPipeline
 metadata:
   name: platform-standard
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   namespace: platform-demo
   annotations:
     openchoreo.dev/display-name: Platform Standard Promotion
     openchoreo.dev/description: Controlled development to staging to production promotion.
+    demo.openchoreo.dev/display-name: "Standard Delivery Pipeline"
+    demo.openchoreo.dev/category: "Delivery"
+    demo.openchoreo.dev/description: "Development to staging to production delivery topology for the regulated demo projects."
 spec:
   promotionPaths:
     - sourceEnvironmentRef:

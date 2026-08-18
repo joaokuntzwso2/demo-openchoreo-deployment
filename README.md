@@ -31,6 +31,59 @@ The objective is to demonstrate not only **how applications run on OpenChoreo**,
 
 ---
 
+## Quick Start
+
+This repository is designed as a reproducible, one-command OpenChoreo
+showcase environment.
+
+The default installation includes:
+
+- OpenChoreo v1.2.2
+- 10 platform Projects across development, staging and production
+- 19 application Components
+- regulated ProjectType and ComponentType golden paths
+- reusable runtime-hardening Trait
+- managed Valkey ResourceType and Resource
+- release governance Workflows
+- OpenChoreo authorization roles and bindings
+- financial-services and telecom demonstration domains
+- OpenChoreo observability
+- Kubernetes Operations Console
+- SUSE Rancher integration
+- the enhanced OpenChoreo Platform Artifacts UI
+
+The Platform Artifacts UI is installed automatically as part of the normal
+bootstrap. It dynamically discovers the live OpenChoreo platform abstractions
+and presents them in a structured catalog instead of requiring users to inspect
+large Kubernetes YAML documents.
+
+### Prerequisites
+
+The workstation requires:
+
+- Docker or Colima
+- Docker Buildx
+- k3d
+- kubectl
+- Helm
+- curl
+- Python 3
+- Git
+
+For the complete local environment, approximately 6 CPUs, 16 GiB of memory,
+and 25 GiB of available container storage are recommended.
+
+On macOS with Colima:
+
+```bash
+colima start \
+  --vm-type=vz \
+  --vz-rosetta \
+  --cpu 6 \
+  --memory 16
+  
+---
+
 # 1. Executive summary
 
 The repository creates a complete local OpenChoreo platform running on a k3d Kubernetes cluster and deploys a multi-project application estate into it.
@@ -4686,3 +4739,65 @@ For the strongest reproducibility evidence:
 ./demo.sh reset \
   | tee /tmp/openchoreo-platform-clean-room.log
 ```
+<!-- PLATFORM-ARTIFACTS-UI -->
+## Dynamic Platform Artifacts inside the OpenChoreo UI
+
+The demo extends the **native OpenChoreo Backstage portal** with a read-only **Platform Artifacts** page at:
+
+```text
+http://openchoreo.localhost:8080/platform-artifacts
+```
+
+This page is part of the normal customer bootstrap. There is no separate UI installation procedure after the extension is committed to this repository:
+
+```bash
+./demo.sh reset
+```
+
+The reset installs OpenChoreo, creates the custom platform artifacts and all 19 application Components, then automatically builds and deploys the enhanced OpenChoreo portal and verifies it before the clean-room run is declared successful.
+
+The page discovers live OpenChoreo objects dynamically. Demo-owned definitions carry source-controlled ownership metadata in their committed manifests:
+
+```yaml
+metadata:
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
+```
+
+The bootstrap also reconciles this metadata on the live objects before validating the portal, so an interrupted UI build cannot leave the catalog silently empty.
+
+The current showcase highlights `regulated-platform`, `regulated-service`, `bank-runtime-hardening`, `platform-valkey-cache`, `regulated-release-gate`, `platform-policy-gate`, the standard delivery pipeline, managed payment cache, environments, alert channels and authorization artifacts. New supported objects carrying the same label appear automatically on the next UI refresh; the frontend does not contain a hard-coded list of artifact names.
+
+The drill-down presents Overview, Parameters, Composition and a structured definition before offering Raw YAML, preserving OpenChoreo's platform-abstraction story while keeping the underlying CRD definition one click away.
+
+### Architecture-safe portal build
+
+The OpenChoreo runtime is pinned to **v1.2.2**, and the custom portal source is therefore pinned to the matching `openchoreo/backstage-plugins` **v1.2.2** tag. The upstream v1.2.2 Backstage Dockerfile pins build stages to `linux/amd64`; this repository removes that build-stage pin and builds for the actual k3d node architecture (`arm64` or `amd64`). This is required for Apple Silicon/Colima and also keeps Intel/AMD customer environments working without a separate script.
+
+Host Node.js and Yarn are **not required** for the custom portal. Yarn lockfile resolution and the complete Backstage production build run in Docker. The first clean bootstrap is therefore slower because it builds the portal once; subsequent `./demo.sh up` runs reuse the matching local architecture image when available. A new clean k3d cluster automatically reimports that image.
+
+The local image uses `imagePullPolicy: Never`, so Kubernetes never attempts to pull the demo-only image from Docker Hub or another registry.
+
+If an environment upgraded from an older revision ever shows `0` custom artifacts, repair the live metadata without rebuilding Backstage:
+
+```bash
+./extensions/platform-artifacts-ui/scripts/repair-platform-artifacts-metadata.sh
+```
+
+Useful verification:
+
+```bash
+./extensions/platform-artifacts-ui/scripts/verify-platform-artifacts-ui.sh
+kubectl get deployment backstage -n openchoreo-control-plane \
+  -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+kubectl get node -o custom-columns=NAME:.metadata.name,ARCH:.status.nodeInfo.architecture
+```
+
+For a deliberate rebuild of only the custom portal:
+
+```bash
+./extensions/platform-artifacts-ui/scripts/deploy-platform-artifacts-ui.sh
+```
+
+Normal users and customers should not need that command; `./demo.sh reset` and `./demo.sh up` call the idempotent ensure flow automatically.
+

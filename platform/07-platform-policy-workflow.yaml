@@ -2,10 +2,15 @@ apiVersion: openchoreo.dev/v1alpha1
 kind: Workflow
 metadata:
   name: platform-policy-gate
+  labels:
+    demo.openchoreo.dev/custom-artifact: "true"
   namespace: platform-demo
   annotations:
     openchoreo.dev/display-name: Platform Promotion Policy Gate
     openchoreo.dev/description: Deterministic platform workflow proving Workflow Plane execution via Argo.
+    demo.openchoreo.dev/display-name: "Platform Policy Gate"
+    demo.openchoreo.dev/category: "Governance Workflow"
+    demo.openchoreo.dev/description: "Namespace-scoped release policy workflow used to demonstrate policy evidence and rejection paths."
 spec:
   ttlAfterCompletion: 1h
   parameters:

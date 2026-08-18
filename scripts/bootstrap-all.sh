@@ -102,6 +102,14 @@ log "Loading deterministic financial scenarios"
 log "Loading deterministic telecom scenarios"
 "$ROOT/scripts/bootstrap-telco-data.sh"
 
+
+# Platform Artifacts UI extension
+if [[ "${ENABLE_PLATFORM_ARTIFACTS_UI:-1}" == "1" ]]; then
+  [[ -x "$ROOT/extensions/platform-artifacts-ui/scripts/ensure-platform-artifacts-ui.sh" ]] || die "Platform Artifacts UI extension is enabled but missing from extensions/platform-artifacts-ui"
+  log "Ensuring architecture-native OpenChoreo Platform Artifacts UI"
+  "$ROOT/extensions/platform-artifacts-ui/scripts/ensure-platform-artifacts-ui.sh"
+fi
+
 "$ROOT/scripts/status.sh"
 log "Platform application bootstrap complete"
 printf '\nOpenChoreo: http://openchoreo.localhost:8080\nRancher: https://localhost:8444\n'

@@ -12,6 +12,10 @@ for cmd in docker k3d kubectl helm curl python3; do
   if command -v "$cmd" >/dev/null 2>&1; then printf '  %-10s %s\n' "$cmd" "$(command -v "$cmd")"; else printf '  %-10s MISSING\n' "$cmd" >&2; missing=1; fi
 done
 [[ "$missing" -eq 0 ]] || die "Install the missing prerequisites before bootstrap. See README.md."
+# Platform Artifacts UI build prerequisite
+if [[ "${ENABLE_PLATFORM_ARTIFACTS_UI:-1}" == "1" ]] && ! command -v git >/dev/null 2>&1; then
+  die "Git is required when ENABLE_PLATFORM_ARTIFACTS_UI=1 because the portal build fetches the OpenChoreo Backstage v1.2.2 source."
+fi
 docker info >/dev/null 2>&1 || die "Docker is installed but the daemon is not reachable. Start Docker Desktop or Colima first."
 docker buildx version >/dev/null 2>&1 || die "Docker Buildx is required."
 

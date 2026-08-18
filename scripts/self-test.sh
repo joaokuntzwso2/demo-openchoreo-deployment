@@ -83,7 +83,6 @@ if grep -RniE '/Users/[^/]+|/mnt/data/' "$ROOT" --exclude-dir=runtime --exclude-
 fi
 rm -f /tmp/platform-demo-paths.$$ 2>/dev/null || true
 printf '  shareable branding/path invariants: PASS\n'
-printf '
 # Fresh-clone OpenChoreo installer invariants.
 grep -q -- '--user openchoreo' "$ROOT/scripts/install-openchoreo.sh" || {
   echo "Quick Start installer must run as the non-root openchoreo user"
@@ -115,4 +114,15 @@ grep -q -- '--update' "$ROOT/scripts/install-openchoreo.sh" || {
   exit 1
 }
 
-==> Static repository self-test PASSED\n'
+# Platform Artifacts UI integration invariants
+for f in "$ROOT"/extensions/platform-artifacts-ui/scripts/*.sh; do bash -n "$f"; done
+python3 -m py_compile "$ROOT"/extensions/platform-artifacts-ui/scripts/*.py
+[[ -x "$ROOT/extensions/platform-artifacts-ui/scripts/ensure-platform-artifacts-ui.sh" ]] || { echo 'Platform Artifacts ensure script missing' >&2; exit 1; }
+grep -q 'ensure-platform-artifacts-ui.sh' "$ROOT/scripts/bootstrap-all.sh" || { echo 'bootstrap is missing Platform Artifacts UI ensure hook' >&2; exit 1; }
+grep -q 'verify-platform-artifacts-ui.sh' "$ROOT/scripts/verify-clean-room.sh" || { echo 'clean-room verifier is missing Platform Artifacts UI verification' >&2; exit 1; }
+grep -q 'OPENCHOREO_BACKSTAGE_REF:-v1.2.2' "$ROOT/extensions/platform-artifacts-ui/scripts/build-platform-artifacts-ui.sh" || { echo 'Platform Artifacts build is not pinned to OpenChoreo Backstage v1.2.2' >&2; exit 1; }
+grep -q 'patch-openchoreo-dockerfile.py' "$ROOT/extensions/platform-artifacts-ui/scripts/build-platform-artifacts-ui.sh" || { echo 'Platform Artifacts build is missing architecture patching' >&2; exit 1; }
+if grep -q -- '--platform linux/amd64' "$ROOT/extensions/platform-artifacts-ui/scripts/build-platform-artifacts-ui.sh"; then echo 'Platform Artifacts build still hard-codes linux/amd64' >&2; exit 1; fi
+printf '  architecture-native Platform Artifacts UI integration: PASS\n'
+
+printf '\n==> Static repository self-test PASSED\n'

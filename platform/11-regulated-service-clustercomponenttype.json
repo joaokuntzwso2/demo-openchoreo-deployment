@@ -7,7 +7,13 @@
       "openchoreo.dev/display-name": "Regulated Service",
       "openchoreo.dev/description": "Banking golden path derived from the OpenChoreo service component type, with an embedded bank-runtime-hardening ClusterTrait.",
       "platform.openchoreo.dev/source-type": "service",
-      "platform.openchoreo.dev/showcase": "bank-tech-showcase"
+      "platform.openchoreo.dev/showcase": "bank-tech-showcase",
+      "demo.openchoreo.dev/display-name": "Regulated Service",
+      "demo.openchoreo.dev/category": "Golden Path",
+      "demo.openchoreo.dev/description": "Reusable service golden path that composes deployment behavior with the bank runtime hardening trait."
+    },
+    "labels": {
+      "demo.openchoreo.dev/custom-artifact": "true"
     }
   },
   "spec": {

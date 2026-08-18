@@ -10,4 +10,5 @@ kubectl get deploy,statefulset,pod,svc,httproute -A 2>/dev/null | grep -E 'dp-pl
 log "External routes"
 for c in platform-portal financial-bff financial-agent telco-portal telco-mcp k8s-ops-console telco-subscriber-service telco-network-service telco-commercial-service telco-policy-service telco-legacy-billing telco-bss-facade; do printf '%-28s %s\n' "$c:" "$(external_url "$c" || echo 'route pending')"; done
 printf '%-28s %s\n' 'OpenChoreo:' 'http://openchoreo.localhost:8080'
+printf '%-28s %s\n' 'Platform Artifacts:' 'http://openchoreo.localhost:8080/platform-artifacts'
 printf '%-28s %s\n' 'Rancher:' 'https://localhost:8444'
