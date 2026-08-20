@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: Subscriber & Service Status API
+  version: 1.0.0
+  description: Telecom subscriber and service assurance API.
+servers:
+  - url: http://development-platform-demo.openchoreoapis.localhost:19080/telco-subscriber-service-http
+tags:
+  - name: Subscribers
+  - name: Risk
+paths:
+  /api/subscribers:
+    get:
+      tags: [Subscribers]
+      summary: List subscribers
+      responses:
+        '200':
+          description: Subscriber list
+
+  /api/subscribers/{subscriberId}/status:
+    get:
+      tags: [Subscribers]
+      summary: Get subscriber service status
+      parameters:
+        - name: subscriberId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: '5511999999999'
+      responses:
+        '200':
+          description: Subscriber service status
+        '404':
+          description: Subscriber not found
+
+  /api/subscribers/{subscriberId}/sim-swap:
+    get:
+      tags: [Risk]
+      summary: Check SIM swap risk
+      parameters:
+        - name: subscriberId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SIM swap information

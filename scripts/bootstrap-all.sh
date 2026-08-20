@@ -75,6 +75,9 @@ kubectl apply -f "$ROOT/platform/components/telco.yaml"
 for c in telco-subscriber-service telco-legacy-billing telco-network-service telco-commercial-service telco-policy-service; do wait_component "$c"; done
 for c in telco-bss-facade telco-mcp telco-portal; do wait_component "$c"; done
 
+log "Publishing demo APIs to the OpenChoreo API catalog"
+"$ROOT/scripts/seed-api-catalog.sh"
+
 log "Deploying the Kubernetes Operations Console with live in-cluster API access"
 "$ROOT/scripts/apply-ops-rbac.sh"
 kubectl apply -f "$ROOT/platform/components/ops.yaml"

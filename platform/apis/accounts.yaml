@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Customer & Accounts API
+  version: 1.0.0
+  description: Customer and account information for the regulated banking demo.
+tags:
+  - name: Customers
+  - name: Accounts
+paths:
+  /api/customers:
+    get:
+      tags: [Customers]
+      summary: List customers
+      responses:
+        '200':
+          description: Customer list
+
+  /api/customers/{id}:
+    get:
+      tags: [Customers]
+      summary: Get customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer details
+        '404':
+          description: Customer not found
+
+  /api/customers/{id}/accounts:
+    get:
+      tags: [Accounts]
+      summary: List customer accounts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Customer accounts
+
+  /api/accounts/{id}:
+    get:
+      tags: [Accounts]
+      summary: Get account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account details

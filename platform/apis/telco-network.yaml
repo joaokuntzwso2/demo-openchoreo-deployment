@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Network Assurance & Quality on Demand API
+  version: 1.0.0
+  description: Network assurance and governed 5G Quality-on-Demand operations.
+servers:
+  - url: http://development-platform-demo.openchoreoapis.localhost:19080/telco-network-service-http
+tags:
+  - name: Network
+  - name: Quality on Demand
+paths:
+  /api/outages:
+    get:
+      tags: [Network]
+      summary: List network outages
+      parameters:
+        - name: region
+          in: query
+          required: false
+          schema:
+            type: string
+          example: SP
+      responses:
+        '200':
+          description: Network outage list
+
+  /api/network/summary:
+    get:
+      tags: [Network]
+      summary: Get network summary
+      responses:
+        '200':
+          description: Network availability summary
+
+  /api/qod/sessions:
+    post:
+      tags: [Quality on Demand]
+      summary: Request Quality on Demand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subscriberId:
+                  type: string
+                  example: '5511999999999'
+                profile:
+                  type: string
+                  example: QOS_E
+                durationSeconds:
+                  type: integer
+                  example: 900
+                country:
+                  type: string
+                  example: BR
+              required:
+                - subscriberId
+      responses:
+        '201':
+          description: QoD session activated
+        '422':
+          description: Request rejected by policy

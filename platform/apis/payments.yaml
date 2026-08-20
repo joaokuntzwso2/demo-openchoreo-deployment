@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Payments Orchestration API
+  version: 1.0.0
+  description: Regulated payment orchestration with fraud and compliance controls.
+tags:
+  - name: Payments
+  - name: Operations
+paths:
+  /api/payments:
+    get:
+      tags: [Payments]
+      summary: List payments
+      responses:
+        '200':
+          description: Payment list
+
+    post:
+      tags: [Payments]
+      summary: Submit a payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  example: 1500
+                currency:
+                  type: string
+                  example: BRL
+                destinationCountry:
+                  type: string
+                  example: BR
+              required:
+                - amount
+                - currency
+      responses:
+        '200':
+          description: Payment decision
+
+  /api/payments/{id}:
+    get:
+      tags: [Payments]
+      summary: Get payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment details
+
+  /api/cache-status:
+    get:
+      tags: [Operations]
+      summary: Check idempotency cache
+      responses:
+        '200':
+          description: Cache status
