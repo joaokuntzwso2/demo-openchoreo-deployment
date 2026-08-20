@@ -78,8 +78,23 @@ helm upgrade --install finops-opencost oci://ghcr.io/openchoreo/helm-charts/fino
 log "Enabling OpenChoreo SRE RCA and FinOps agents"
 helm upgrade --install openchoreo-observability-plane oci://ghcr.io/openchoreo/helm-charts/openchoreo-observability-plane \
   --version 1.2.2 --namespace openchoreo-observability-plane --reuse-values \
-  --set rca.enabled=true --set rca.llm.modelName="$MODEL" \
-  --set finOpsAgent.enabled="true" --set finOpsAgent.llmName="$MODEL" --set finOpsAgent.remediationEnabled=true \
+  --set-string security.oidc.jwksUrl="http://thunder-service.thunder.svc.cluster.local:8090/oauth2/jwks" \
+  --set-string security.oidc.tokenUrl="http://thunder-service.thunder.svc.cluster.local:8090/oauth2/token" \
+  --set-string security.oidc.authServerBaseUrl="http://thunder.openchoreo.localhost:8080" \
+  --set rca.enabled=true \
+  --set-string rca.llm.modelName="$MODEL" \
+  --set-string rca.openchoreoApiUrl="http://api.openchoreo.localhost:8080" \
+  --set-string 'rca.cors.allowedOrigins[0]=http://openchoreo.localhost:8080' \
+  --set-string 'rca.http.hostnames[0]=rca-agent.openchoreo.localhost' \
+  --set finOpsAgent.enabled=true \
+  --set-string finOpsAgent.llmName="$MODEL" \
+  --set finOpsAgent.remediationEnabled=true \
+  --set-string finOpsAgent.openchoreoApiUrl="http://api.openchoreo.localhost:8080" \
+  --set-string 'finOpsAgent.cors.allowedOrigins[0]=http://openchoreo.localhost:8080' \
+  --set-string 'finOpsAgent.http.hostnames[0]=finops-agent.openchoreo.localhost' \
+  --set gateway.httpPort=11080 \
+  --set gateway.httpsPort=11085 \
+  --set gateway.tls.enabled=false \
   "${HELM_SSA_ARGS[@]}"
 kubectl patch clusterobservabilityplane default --type=merge \
   -p '{"spec":{"rcaAgentURL":"http://rca-agent.openchoreo.localhost:11080","finOpsAgentURL":"http://finops-agent.openchoreo.localhost:11080"}}' >/dev/null
