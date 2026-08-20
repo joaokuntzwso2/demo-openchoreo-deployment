@@ -6,6 +6,7 @@ source "$(dirname "$0")/lib.sh"
 need docker
 need k3d
 need kubectl
+need helm
 
 VERSION="${OPENCHOREO_VERSION:-v1.2.2}"
 
@@ -41,10 +42,38 @@ adopt_context() {
     || die "Could not switch kubectl to '$ctx'"
 }
 
+ensure_observer_browser_access() {
+  local namespace="openchoreo-observability-plane"
+  local release="openchoreo-observability-plane"
+  local chart_version="${VERSION#v}"
+
+  log "Ensuring Observer browser access for the OpenChoreo portal"
+
+  helm status "$release" \
+    --namespace "$namespace" \
+    >/dev/null 2>&1 \
+    || die "Observability Plane Helm release '$release' is unavailable"
+
+  helm upgrade "$release" \
+    oci://ghcr.io/openchoreo/helm-charts/openchoreo-observability-plane \
+    --version "$chart_version" \
+    --namespace "$namespace" \
+    --reuse-values \
+    --set-json 'observer.cors.allowedOrigins=["http://openchoreo.localhost:8080"]' \
+    >/dev/null
+
+  kubectl rollout status deployment/observer \
+    --namespace "$namespace" \
+    --timeout=120s
+
+  log "Observer browser access configured"
+}
+
 if cluster_exists; then
   adopt_context
 
   if kubectl get crd components.openchoreo.dev >/dev/null 2>&1; then
+    ensure_observer_browser_access
     log "OpenChoreo CRDs already installed in $ctx; leaving current installation in place"
     exit 0
   fi
@@ -135,5 +164,7 @@ kubectl get clusterworkflowplane default >/dev/null 2>&1 \
 
 kubectl get clusterobservabilityplane default >/dev/null 2>&1 \
   || die "Default OpenChoreo Observability Plane is unavailable"
+
+ensure_observer_browser_access
 
 log "OpenChoreo $VERSION installation completed successfully in $ctx"
